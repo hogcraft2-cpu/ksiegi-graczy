@@ -1,0 +1,115 @@
+/* Skryptorium — galeria ilustracji i ich układ na kartach; współdzielony przez kreator i bibliotekę. */
+.scene-filters{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin:13px 0}
+.scene-filters label,.scene-placement label,.photo-location label{
+  color:#ddc398;font:13px/1.35 'EB Garamond',Georgia,serif;
+}
+.scene-filters input,.scene-filters select,.scene-placement input,.scene-placement select,
+.photo-location input,.photo-location select{
+  display:block;width:100%;min-width:0;margin-top:5px;
+  color:#f6e2bf;background:#1a1511;border:1px solid #957348;
+  border-radius:0;padding:9px 7px;font:13px/1.25 Georgia,serif;
+}
+.scene-filters input:focus-visible,.scene-filters select:focus-visible,
+.scene-placement input:focus-visible,.scene-placement select:focus-visible,
+.photo-location input:focus-visible,.photo-location select:focus-visible{outline:2px solid #cba66c;outline-offset:1px}
+.scene-gallery{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  max-height:385px;overflow:auto;padding:5px;
+  border:1px solid #6d4b2c;background:linear-gradient(#201912,#302317);
+  scrollbar-color:#80592b #241810;
+}
+.scene-card{
+  position:relative;display:flex;flex-direction:column;align-items:stretch;
+  min-width:0;overflow:hidden;padding:5px;border:1px solid #7a5937;
+  background:#21180f;color:#f0d8ad;text-align:left;cursor:pointer;
+  box-shadow:inset 0 0 0 1px #3c2919;
+  transition:border-color .15s,transform .15s,box-shadow .15s;
+}
+.scene-card:hover{transform:translateY(-2px);border-color:#dfac64}
+.scene-card.is-selected{border-color:#f2cb88;box-shadow:0 0 0 2px #c49c5f,inset 0 0 0 1px #ecc790}
+.scene-card img{
+  display:block;width:100%;height:auto;aspect-ratio:4/3;
+  object-fit:cover;border:1px solid #97764e;
+  filter:saturate(.86) sepia(.06);
+}
+.scene-card__name{font:13px/1.22 'Cinzel',Georgia,serif;padding:8px 3px 2px;min-height:36px}
+.scene-card__group{padding:2px 3px 3px;color:#bba07c;font:12px/1.2 'EB Garamond',serif}
+.scene-card__check{position:absolute;top:10px;right:10px;padding:4px 6px;background:#27170bdc;border:1px solid #f5d492;color:#f5d492;font-size:12px}
+.scene-selected{font-size:14px;color:#f1d19e;margin:12px 2px}
+.scene-placement{
+ margin:12px 0 20px;padding:15px;border:1px solid #98734b;
+ background:linear-gradient(125deg,#3b2c1c,#241b14);
+ box-shadow:inset 0 0 0 2px #1d150d;
+}
+.scene-placement h3,.scene-list-title{font:500 17px/1.3 'Cinzel',serif;color:#f2d49e;margin:0 0 12px}
+.scene-placement__fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.scene-placement__fields label:last-child{grid-column:span 2}
+.scene-placement .button{margin:11px 4px 0 0;white-space:normal;font-size:11px}
+.scene-placement .hint{line-height:1.35}
+.scene-gallery .hint{grid-column:1/-1;margin:10px}
+.scene-list-title{margin-top:21px}
+.photo-item{align-items:start}
+.photo-item>div{min-width:0;flex:1}
+.photo-location{
+ display:grid;grid-template-columns:1fr 1fr;gap:7px;
+ margin-top:10px;padding-top:8px;border-top:1px solid #755637;
+}
+.photo-location label:first-child{grid-column:1/2}
+.photo-location label:nth-child(3){grid-column:1/-1}
+.photo-item__show{margin-top:10px;background:#473420;color:#f2d3a1;border:1px solid #9a744a;padding:6px 9px;font:12px 'Cinzel',serif}
+
+/* Jedna iluminacja wewnątrz wybranej strony, razem z tekstem. */
+.folio-content,.page-content{position:relative;isolation:isolate}
+.illustrated-body{
+ display:flex;flex:1;flex-direction:column;justify-content:flex-start;
+ gap:6px;min-height:0;overflow:hidden;
+}
+.illustrated-body>.folio-text,.illustrated-body>.page-body{
+ flex:0 1 auto;min-height:0;overflow:hidden;
+ font-size:clamp(12px,1vw,16px);line-height:1.28;
+}
+.illustration-figure{
+ position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ margin:3px auto 7px;max-width:100%;min-height:0;flex:none;
+ text-align:center;
+}
+.illustration-figure img{
+ display:block;max-width:100%;object-fit:contain;
+ border:2px solid #8d5d33;outline:1px solid #d3a762;outline-offset:1px;
+ box-shadow:inset 0 0 5px #523016,0 3px 8px #23170c65;
+ background:#e2c499;
+}
+.illustration-figure figcaption{
+ font:italic 12px/1.2 'EB Garamond',Georgia,serif;
+ margin:5px 0 0;text-align:center;max-width:100%;
+}
+.illustration-figure[data-size="small"] img{height:78px;max-width:62%}
+.illustration-figure[data-size="medium"] img{height:114px;max-width:85%}
+.illustration-figure[data-size="large"] img{height:159px;max-width:96%}
+.folio-content>.illustration-figure,.page-content>.illustration-figure{max-height:123px}
+.folio-content>.illustration-figure img,.page-content>.illustration-figure img{max-height:88px}
+.illustration-figure[data-position="top"]{margin-top:3px;margin-bottom:auto}
+.illustration-figure[data-position="middle"]{margin-top:auto;margin-bottom:auto}
+.illustration-figure[data-position="bottom"]{margin-top:auto;margin-bottom:6px}
+.illustrated-body>.illustration-figure[data-position="top"],
+.illustrated-body>.illustration-figure[data-position="middle"],
+.illustrated-body>.illustration-figure[data-position="bottom"]{margin-top:3px;margin-bottom:4px}
+.folio-content>.folio-footer,.page-content>.page-index{margin-top:auto}
+.folio-photo,.page-image{max-width:100%;object-fit:contain}
+
+/* Zapis wyglądu na mniejszych ekranach */
+@media(max-width:1120px){
+ .illustration-figure[data-size="small"] img{height:61px}
+ .illustration-figure[data-size="medium"] img{height:83px}
+ .illustration-figure[data-size="large"] img{height:106px}
+ .illustration-figure figcaption{font-size:11px}
+}
+@media(max-width:570px){
+ .scene-gallery{max-height:350px}
+ .scene-card__name{font-size:11px}
+ .scene-placement__fields{grid-template-columns:1fr 1fr}
+ .scene-placement__fields label:nth-child(2){grid-column:1/-1}
+ .illustration-figure[data-size="medium"] img{height:112px}
+ .illustration-figure[data-size="large"] img{height:142px}
+ .illustration-figure[data-size="small"] img{height:82px}
+}
