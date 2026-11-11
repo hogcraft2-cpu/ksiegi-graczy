@@ -15,9 +15,10 @@ const BOOK_LIMIT=850_000; // GitHub Contents API: plik JSON zachowujemy poniżej
 const IMAGE_LIMIT=250_000;
 const GITHUB_REPO="hogcraft2-cpu/ksiegi-graczy";
 const GITHUB_CATALOG="books/catalog.json";
-const SPINES=["illuminated","ironbound","monastic","merchant"];
-const PAPERS=["classic","royal","battle","monastery","nocturne"];
-const COVERS=["burgundy","forest","midnight","chestnut"];
+const SPINES=["illuminated","ironbound","monastic","merchant","royal","crusader","archivist","alchemist","rustic","celestial"];
+const PAPERS=["classic","royal","battle","monastery","nocturne","vellum","marbled","scholar","herbarium","ash","azure","crimson","cathedral","winter"];
+const COVERS=["burgundy","forest","midnight","chestnut","oxblood","ivory","obsidian","violet","teal","copper","ochre","slate"];
+const FRAMES=["plain","filigree","gothic","heraldic","vines","royal","scribal"];
 const DATA_IMAGE=/^data:image\/(png|jpeg|webp);base64,[a-z\d+/=]+$/i;
 const ID_RE=/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/;
 const today=()=>new Date().toISOString().slice(0,10);
@@ -92,6 +93,7 @@ function validateBook(raw){
    cover:COVERS.includes(raw.cover)?raw.cover:"burgundy",
    paper:PAPERS.includes(raw.paper)?raw.paper:"classic",
    spine:SPINES.includes(raw.spine)?raw.spine:"illuminated",
+   frame:FRAMES.includes(raw.frame)?raw.frame:"plain",
    crest:null,photos:[]
  };
  if(!book.character||!book.story.trim())throw new ApiError(422,"Podaj imię postaci i jej historię.");
