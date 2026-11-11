@@ -223,6 +223,7 @@
     paper:"classic", cover:"burgundy", spine:"illuminated", frame:"plain", crest:null, photos:[]
   });
   const SAFE_IMAGE = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
+  const SCENE_IMAGE = /^assets\/scenes\/scene-(?:0[1-9]|10)\.webp$/;
   const MAX_IMAGES = 12;
   let state = DEFAULT();
   let pages = [];
@@ -234,7 +235,7 @@
   }[ch]));
   const plainText = value => String(value ?? "").replace(/\r\n?/g,"\n").trim();
   const smallScreen = () => matchMedia("(max-width: 570px)").matches;
-  const isImage = value => typeof value === "string" && value.length <= 6_000_000 && SAFE_IMAGE.test(value);
+  const isImage = value => typeof value === "string" && value.length <= 6_000_000 && (SAFE_IMAGE.test(value)||SCENE_IMAGE.test(value));
   const safeStyle = name => PAPERS.some(x => x.id===name) ? name : "classic";
   const safeCover = name => COVERS.some(x => x.id===name) ? name : "burgundy";
   const safeSpine = name => SPINES.some(x => x.id===name) ? name : "illuminated";
@@ -256,12 +257,10 @@
     out.cover=safeCover(raw.cover);
     out.spine=safeSpine(raw.spine);
     out.frame=safeFrame(raw.frame);
-    if(isImage(raw.crest))out.crest=raw.crest;
-    if(Array.isArray(raw.photos))out.photos=raw.photos.slice(0,MAX_IMAGES).filter(x=>x&&isImage(x.data)).map((photo,i)=>({
-      id:String(photo.id||("zdjecie-"+i)).slice(0,50),
-      data:photo.data,
-      caption:String(photo.caption||"").slice(0,160)
-    }));
+    if(typeof raw.crest==="string"&&SAFE_IMAGE.test(raw.crest)&&raw.crest.length<=6_000_000)out.crest=raw.crest;
+    if(Array.isArray(raw.photos))out.photos=raw.photos.slice(0,MAX_IMAGES)
+      .filter(x=>x&&isImage(x.data))
+      .map((photo,i)=>({...window.KSIEGI_LAYOUT.normalizePhoto(photo),id:String(photo.id||("zdjecie-"+i)).slice(0,50)}));
     return out;
   }
   function loadDraft(){
@@ -481,16 +480,33 @@
     return result;
   }
   function buildPages(){
-    const bookTitle=plainText(state.character)||"Kronika postaci";
-    const output=[{kind:"title",title:bookTitle,subtitle:state.subtitle,author:state.author,year:state.year,crest:state.crest}];
-    if(plainText(state.summary))output.push(...textPages(state.summary,"Przedmowa"));
-    else output.push({kind:"blank",title:"O dziejach postaci",message:"Tutaj znajdzie się wprowadzenie do kroniki."});
-    const storyPages=textPages(state.story,"Początki opowieści");
-    output.push(...(storyPages.length?storyPages:[{kind:"blank",title:"Karta kronikarza",message:"Wpisz historię postaci po lewej stronie, aby zapełnić kolejne karty."}]));
-    state.photos.forEach((p,i)=>output.push({kind:"image",title:`Ilustracja ${i+1}`,data:p.data,caption:p.caption}));
-    output.push({kind:"end",title:"Koniec dotychczas zapisanych dziejów"});
-    if(output.length%2)output.push({kind:"blank",title:"",message:""});
-    return output;
+    return window.KSIEGI_LAYOUT.compile(state);
+  }
+  function illustrationMarkup(photo){
+    if(!photo||!isImage(photo.data))return "";
+    const position=window.KSIEGI_LAYOUT.validPosition(photo.position);
+    const size=window.KSIEGI_LAYOUT.validSize(photo.size);
+    return `<figure class="illustration-figure" data-position="${position}" data-size="${size}">
+      <img src="${escapeHtml(photo.data)}" alt="${escapeHtml(photo.caption||"Iluminacja z kroniki")}" loading="lazy">
+      ${photo.caption?`<figcaption>${escapeHtml(photo.caption)}</figcaption>`:""}
+      </figure>`;
+  }
+  function paragraphsWithIllustration(paragraphs,illustration){
+    if(!illustration)return `<div class="folio-text">${paragraphs.map(p=>`<p>${escapeHtml(p)}</p>`).join("")}</div>`;
+    const blocks=paragraphs.slice();
+    if(blocks.length===1){
+      const words=blocks[0].split(/\\s+/);
+      if(words.length>5){
+        const middle=Math.floor(words.length/2);
+        blocks.splice(0,1,words.slice(0,middle).join(" "),words.slice(middle).join(" "));
+      }
+    }
+    const parts=blocks.map(p=>`<div class="folio-text"><p>${escapeHtml(p)}</p></div>`);
+    const image=illustrationMarkup(illustration),position=illustration.position;
+    if(position==="top")parts.unshift(image);
+    else if(position==="bottom")parts.push(image);
+    else parts.splice(Math.ceil(parts.length/2),0,image);
+    return `<div class="illustrated-body">${parts.join("")}</div>`;
   }
   function renderFolio(folio,page,index){
     folio.dataset.paper=state.paper;
@@ -505,7 +521,7 @@
         <p class="folio-subtitle">${escapeHtml(page.author?"Spisane przez "+page.author:"")}</p>`;
     }else if(page.kind==="text"){
       inner=`${head}<h2 class="folio-title">${escapeHtml(page.title||"Kronika")}</h2><div class="folio-rule"></div>
-        <div class="folio-text">${page.paragraphs.map(p=>`<p>${escapeHtml(p)}</p>`).join("")}</div>`;
+        ${paragraphsWithIllustration(page.paragraphs,page.illustration)}`;
     }else if(page.kind==="image"){
       inner=`${head}<h2 class="folio-title">${escapeHtml(page.title)}</h2>
       <img class="folio-photo" src="${page.data}" alt="${escapeHtml(page.caption||"Ilustracja kroniki")}">
@@ -517,6 +533,7 @@
       inner=`${head}<h2 class="folio-title">${escapeHtml(page.title||"")}</h2><div class="folio-sigil">✣</div>
       <p class="folio-placeholder">${escapeHtml(page.message||"")}</p>`;
     }
+    if(page.illustration&&page.kind!=="text")inner+=illustrationMarkup(page.illustration);
     folio.innerHTML=`<article class="folio-content">${inner}<div class="folio-footer">✥ &nbsp; ${index+1} &nbsp; ✥</div></article>`;
   }
   function updateControls(){
