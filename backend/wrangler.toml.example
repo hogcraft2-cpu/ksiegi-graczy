@@ -1,0 +1,23 @@
+name = "ksiegi-graczy-api"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://hogcraft2-cpu.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ksiegi-graczy-db"
+database_id = "WPISZ_ID_BAZY_D1"
+
+[[r2_buckets]]
+binding = "BOOKS"
+bucket_name = "ksiegi-graczy-books"
+
+[ai]
+binding = "AI"
+
+# Hasło administratora i sól limitów ustaw przez:
+# npx wrangler secret put ADMIN_SECRET
+# npx wrangler secret put RATE_SALT
+# Nigdy nie wstawiaj ich do pliku TOML ani do kodu JavaScript.
