@@ -393,6 +393,7 @@
       const response=await fetch(API_BASE+"/api/health",{cache:"no-store"});
       const data=await response.json();
       if(!response.ok||!data.storage)throw Error("Brak połączenia z bazą danych.");
+      if(!data.adminConfigured)throw Error("Administrator nie skonfigurował jeszcze sekretu ADMIN_SECRET w Cloudflare.");
       info.textContent="Serwer online jest gotowy. Możesz opublikować księgę z własnym hasłem.";
       $("publish-online").disabled=false;
     }catch(err){
