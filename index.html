@@ -128,7 +128,8 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
           <div class="publish-online">
             <div class="section-heading">✥ &nbsp; Publikacja w bibliotece</div>
             <h2>Opublikuj księgę z hasłem</h2>
-            <p class="description">Każda opublikowana księga dostaje własny identyfikator i hasło właściciela. Dzięki nim później zmienisz treść lub ją usuniesz w osobnym panelu. Hasło nie trafi do pliku JSON ani do publicznej biblioteki.</p>
+            <p class="description">Publiczna historia, herb i zdjęcia zostaną zapisane w repozytorium GitHub. Indywidualne hasło służy do późniejszej edycji i usuwania, a jego hash pozostanie w prywatnej bazie Cloudflare.</p>
+            <p class="hint"><strong>Ważne:</strong> opublikowane treści są jawne, również w historii zmian GitHuba. Usunięcie książki z półki nie wymazuje wcześniejszych wersji. Nie dodawaj danych poufnych.</p>
             <label for="publish-password">Hasło właściciela (minimum 12 znaków)</label>
             <input id="publish-password" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Ustal silne, unikatowe hasło">
             <label for="publish-confirm">Powtórz hasło</label>
@@ -142,7 +143,7 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
               <p><a href="./zarzadzanie.html">Przejdź do panelu edycji i generatora ilustracji →</a></p>
             </div>
           </div>
-          <div class="future-note"><strong>Publiczna biblioteka już dostępna</strong><p>Wybierz księgę z regału i czytaj bez zmiany adresu strony. Opublikowanie nowej księgi wymaga obecnie dodania pliku JSON i wpisu w katalogu przez opiekuna repozytorium.</p><p><a href="./biblioteka.html">Przejdź do biblioteki ksiąg →</a></p></div>
+          <div class="future-note"><strong>Publiczna biblioteka</strong><p>Po podłączeniu Workera opublikowana księga zostanie zapisana automatycznie na GitHubie i pojawi się w bibliotece po aktualizacji katalogu. Do czasu uruchomienia API możesz pobrać projekt JSON i zachować go na dysku.</p><p><a href="./biblioteka.html">Przejdź do biblioteki ksiąg →</a></p></div>
           <button id="clear-project" class="text-button danger" type="button">Wyczyść i rozpocznij nowy rękopis</button>
         </section>
       </div>
