@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#15100b">
+  <meta name="description" content="Biblioteka ksiąg postaci — czytaj średniowieczne kroniki bohaterów. Odkrywaj księgi na półkach, wysuń tom i przewracaj karty.">
+  <title>Biblioteka Postaci • Skryptorium</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./biblioteka.css">
+  <script src="./biblioteka.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./biblioteka.html" aria-label="Biblioteka postaci — strona główna">
+      <span class="brand__seal" aria-hidden="true">✥</span>
+      <span><small>SKRYPTORIUM · ANNO DOMINI MCDIII</small><strong>Biblioteka Postaci</strong></span>
+    </a>
+    <nav class="topnav" aria-label="Nawigacja">
+      <a href="./index.html" class="topnav__create">✒ &nbsp; Stwórz własną księgę</a>
+    </nav>
+  </header>
+
+  <main class="hall">
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro__ornament" aria-hidden="true">❧ &nbsp; ✥ &nbsp; ❧</div>
+      <p class="eyebrow">ARCHIWUM OPOWIEŚCI I KRONIK · ZIEMIE CZESKIE</p>
+      <h1 id="intro-title">Wielka <em>Biblioteka</em> Kronik</h1>
+      <p class="intro__description">W drewnianych regałach spoczywają opowieści tych, których losy zapisano na kartach pergaminu. Wybierz księgę po imieniu na jej grzbiecie, wysuń ją z półki i rozpocznij lekturę.</p>
+      <div class="intro__divider" aria-hidden="true"><span>✣</span></div>
+    </section>
+
+    <section class="catalog" aria-labelledby="catalog-title">
+      <div class="catalog__heading">
+        <div><p class="eyebrow">CATALOGUS LIBRORUM</p><h2 id="catalog-title">Księgi na półkach</h2></div>
+        <div class="catalog__tools">
+          <span class="catalog__count" id="book-count">Wczytywanie kronik…</span>
+          <label class="search-field" for="search-books">
+            <span aria-hidden="true">⌕</span>
+            <input id="search-books" type="search" placeholder="Szukaj postaci lub tytułu…" autocomplete="off">
+          </label>
+        </div>
+      </div>
+      <div class="shelves" id="shelves" aria-live="polite" aria-label="Półki z księgami">
+        <div class="loading"><span class="loading__mark" aria-hidden="true">✥</span><p>Otwieranie bibliotecznego katalogu…</p></div>
+      </div>
+      <div class="catalog__empty" id="catalog-empty" hidden>
+        <div aria-hidden="true">❧</div><h3>Brak ksiąg</h3><p id="catalog-empty-text">Nie znaleziono ksiąg pasujących do wyszukiwania.</p>
+      </div>
+    </section>
+    <footer class="footer"><span>✥ &nbsp; Skryptorium i Kroniki Postaci</span><span>Każda historia ma swoją kartę. Każda karta ma swojego autora.</span></footer>
+  </main>
+
+  <div class="reader" id="reader" role="dialog" aria-modal="true" aria-labelledby="reader-title" aria-describedby="reader-subtitle" hidden>
+    <div class="reader__scrim" data-dismiss aria-hidden="true"></div>
+    <div class="reader__window" id="reader-window">
+      <header class="reader__top">
+        <div class="reader__identity">
+          <span class="eyebrow" id="reader-eyebrow">KSIĘGA Z BIBLIOTEKI</span>
+          <h2 id="reader-title">Kronika</h2>
+          <p id="reader-subtitle">Dzieje bohatera</p>
+        </div>
+        <button type="button" class="reader__close" id="close-reader" aria-label="Zamknij księgę i wróć do biblioteki">✕ <span>Zamknij</span></button>
+      </header>
+      <div class="reader__stage">
+        <div class="reader__book" id="reader-book" aria-label="Otwarta księga">
+          <article class="reader__page reader__page--left" id="page-left" data-paper="classic"></article>
+          <span class="reader__gutter" aria-hidden="true"></span>
+          <article class="reader__page reader__page--right" id="page-right" data-paper="classic"></article>
+          <div class="reader__flip" id="reader-flip" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="reader__controls">
+        <button type="button" class="reader__arrow" id="reader-prev" disabled>← <span>Poprzednia</span></button>
+        <span id="reader-counter" class="reader__counter" aria-live="polite">Strona 1</span>
+        <button type="button" class="reader__arrow" id="reader-next"><span>Następna</span> →</button>
+      </div>
+      <p class="reader__hint">Klawisze ← → przewracają strony. Esc zamyka księgę.</p>
+    </div>
+  </div>
+  <div class="pull-animation" id="pull-animation" aria-hidden="true" hidden></div>
+  <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+</body>
+</html>
