@@ -13,6 +13,7 @@ Obie podstrony są połączone linkami. Podczas wybierania i czytania księgi **
 
 - Średniowieczny drewniany regał z osobnymi półkami.
 - Księgi widoczne **grzbietami**: na każdej okładce imię postaci i podtytuł, kolor oprawy i rok.
+- Wygląd grzbietu **nie jest losowany**: biblioteka respektuje wariant `spine` zapisany przez autora w kreatorze i katalogu.
 - Wyszukiwanie po imieniu, podtytule i roku.
 - Animacja wysunięcia wybranej księgi z regału.
 - Duży czytnik z **dwiema pergaminowymi stronami** (jedna karta na telefonie).
@@ -28,6 +29,7 @@ Strona jest publiczna i **wyłącznie do odczytu**. Nie ma rejestracji, bazy dan
 - Historia, imię postaci, podtytuł, rok, autor i przedmowa.
 - Pięć rodzajów pergaminu: klasyczny, królewski, bitewny, zakonny, nocny.
 - Cztery kolory skórzanej oprawy: bordowy, zielony, granatowy, brązowy.
+- **Cztery wybieralne grzbiety** w zakładce **02 Wygląd**: iluminowany, żelazny, zakonny i kupiecki — każdy z podglądem z imieniem postaci i podtytułem.
 - Własny herb na przedniej okładce i karcie tytułowej.
 - Do 12 ilustracji wraz z podpisami.
 - Podgląd księgi i lokalny zapis roboczy.
@@ -61,11 +63,14 @@ Na razie publikację zatwierdza opiekun repozytorium — gracze nie mogą publik
   "subtitle": "Kronika strażnika Kuttenbergu",
   "year": "1403",
   "paper": "classic",
-  "cover": "forest"
+  "cover": "forest",
+  "spine": "ironbound"
 }
 ```
 
 4. Zapisz zmiany na gałęzi `main`. Workflow GitHub Pages opublikuje nową księgę.
+
+**Ważne:** podczas ręcznego dodawania księgi do katalogu przepisz pole `spine` z pobranego JSON; dozwolone wartości to `illuminated`, `ironbound`, `monastic` i `merchant`. Starsze księgi bez tego pola używają `illuminated`.
 
 Księgi na półkach są generowane automatycznie z `books/catalog.json`. Pełną treść danej księgi pobieramy **dopiero po jej kliknięciu**. Katalog nie może wskazywać adresów zewnętrznych ani dowolnych skryptów.
 
@@ -87,6 +92,7 @@ Plik danych:
     "story": "Rozdział I. Początki\n\nW pewnej wsi...",
     "paper": "classic",
     "cover": "forest",
+    "spine": "ironbound",
     "crest": null,
     "photos": []
   }
