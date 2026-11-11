@@ -12,7 +12,9 @@
   <link rel="stylesheet" href="spine.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="manuscript-themes.css">
+  <link rel="stylesheet" href="illustration-placement.css">
   <script src="api-config.js"></script>
+  <script src="book-layout.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -99,16 +101,49 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
         </section>
 
         <section class="edit-panel" id="panel-images" data-panel="images" hidden>
-          <div class="section-heading">✥ &nbsp; Rycinami ozdobiona opowieść</div>
-          <h2>Ilustracje i fotografie</h2><p class="description">Dodaj portret postaci, sceny z jej życia, rodzinne posiadłości lub inne obrazy. Trafią na osobne karty z podpisami.</p>
+          <div class="section-heading">✥ &nbsp; Iluminacje z roku 1400</div>
+          <h2>Galeria gotowych ilustracji</h2>
+          <p class="description">Wybierz malowaną scenę, a następnie wskaż numer karty i miejsce, w którym ma się pojawić. Obrazy możesz później dowolnie przestawiać.</p>
+          <div class="scene-filters">
+            <label for="scene-search">Szukaj sceny<input id="scene-search" type="search" placeholder="Np. kowal, miecz, las" autocomplete="off"></label>
+            <label for="scene-category">Rodzaj sceny<select id="scene-category"><option value="">Wszystkie</option></select></label>
+          </div>
+          <div class="scene-gallery" id="scene-gallery" role="group" aria-label="Wybierz ilustrację z galerii">
+            <p class="hint">Wczytywanie galerii ilustracji…</p>
+          </div>
+          <p class="scene-selected" id="scene-selected" role="status">Wybierz malowaną scenę z galerii.</p>
+          <div class="scene-placement">
+            <h3>Wstaw wybraną ilustrację</h3>
+            <div class="scene-placement__fields">
+              <label for="scene-page">Numer karty w księdze<input id="scene-page" type="number" min="1" max="500" value="2" inputmode="numeric"></label>
+              <label for="scene-position">Umiejscowienie<select id="scene-position">
+                <option value="top">U góry kartki</option>
+                <option value="middle" selected>Pośrodku kartki</option>
+                <option value="bottom">U dołu kartki</option>
+                <option value="full">Osobna karta z obrazem</option>
+              </select></label>
+              <label for="scene-size">Rozmiar<select id="scene-size">
+                <option value="small">Mały</option>
+                <option value="medium" selected>Średni</option>
+                <option value="large">Duży</option>
+              </select></label>
+              <label for="scene-caption">Podpis pod ryciną<input id="scene-caption" type="text" maxlength="160" placeholder="Np. Pierwsze spotkanie z kowalem"></label>
+            </div>
+            <button type="button" id="scene-use-current" class="button">Wybierz kartę z podglądu</button>
+            <button type="button" id="scene-insert" class="button button--gold">✥ Wstaw obraz na wskazaną kartę</button>
+            <p class="hint">Na jednej karcie umieścisz jeden obraz. Karty numerowane są od pierwszej strony tytułowej (1). Na rozkładówce widzisz dwie kolejne karty.</p>
+          </div>
+          <div class="rule"></div>
+          <h2>Dodaj własne ilustracje</h2>
           <label for="photos-upload" class="upload-zone">
             <span class="upload-zone__icon">❦</span>
-            <strong>Wybierz obrazy</strong>
-            <span>JPG / PNG / WebP · maksymalnie 12 fotografii</span>
+            <strong>Wybierz obrazy ze swojego urządzenia</strong>
+            <span>JPG / PNG / WebP · do 12 obrazów łącznie</span>
           </label>
           <input id="photos-upload" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+          <h3 class="scene-list-title">Ilustracje w tej księdze</h3>
           <div class="photo-list" id="photo-list" aria-live="polite"></div>
-          <p class="hint">Dodane obrazy są automatycznie zmniejszane i zapisywane razem z księgą.</p>
+          <p class="hint">Każdemu obrazowi możesz zmienić numer karty, pozycję i rozmiar. Nowy wygląd zapisuje się razem z księgą.</p>
         </section>
 
         <section class="edit-panel" id="panel-save" data-panel="save" hidden>
