@@ -33,3 +33,63 @@
 .topbar .local-indicator{margin-left:0}
 .future-note a{color:#f1cc92;text-underline-offset:3px}
 @media(max-width:570px){.topbar__library{font-size:9px;padding:7px;margin-left:auto;max-width:132px;white-space:normal;text-align:center}}
+
+
+/* Wybór konkretnej oprawy grzbietu: ten sam spine.css co w bibliotece. */
+.spine-options{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;margin:12px 0 9px;
+}
+.spine-choice{
+  min-width:0;display:flex;flex-direction:column;align-items:stretch;
+  padding:9px 9px 11px;border:1px solid #756044;
+  border-radius:2px;color:#ead6b4;
+  background:linear-gradient(145deg,#35281e,#211b16);
+  text-align:center;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.spine-choice:hover{border-color:#c8a173;background:linear-gradient(145deg,#423020,#271e17)}
+.spine-choice.is-selected{
+  border-color:#f0c888;
+  background:linear-gradient(145deg,#483321,#282018);
+  box-shadow:inset 0 0 0 1px #c49c62,0 0 0 2px #c49c621f;
+}
+.spine-choice__stage{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:210px;min-width:0;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 50% 76%,#a16b3f35,transparent 63%),
+    repeating-linear-gradient(92deg,#0000 0 32px,#100b086e 34px 36px),
+    linear-gradient(140deg,#47301e,#2c1c11);
+  border:1px solid #7d5633;
+  box-shadow:inset 0 0 13px #0b08099c;
+}
+.spine-choice .book-spine{
+  --book-height:245px;--book-width:98px;
+  transform:scale(.76)!important;
+  transform-origin:center center!important;
+  pointer-events:none;
+  filter:drop-shadow(4px 7px 4px #0009);
+  margin:0;
+}
+.spine-choice:hover .book-spine,
+.spine-choice.is-selected .book-spine{
+  filter:brightness(1.12) drop-shadow(4px 7px 4px #000b);
+}
+.spine-choice__caption{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:9px}
+.spine-choice__caption strong{
+  font:500 15px 'Cinzel',Georgia,serif;color:#f3d7a5;letter-spacing:.01em;
+}
+.spine-choice__caption>span:not(.spine-choice__checked){
+  font:13px/1.4 'EB Garamond',Georgia,serif;color:#bba789;
+}
+.spine-choice__checked{
+  font:10px/1.5 Arial,sans-serif;color:#f2ce8f;
+  letter-spacing:.05em;margin-top:3px;
+}
+@media(max-width:390px){
+  .spine-options{gap:8px}
+  .spine-choice{padding:6px}
+  .spine-choice__caption strong{font-size:12px}
+  .spine-choice__stage{height:203px}
+}
