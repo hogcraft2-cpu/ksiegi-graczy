@@ -15,7 +15,7 @@
    $("feedback").style.color=error?"#f2a88f":"#e3c28c";
  }
  async function api(path,options={}){
-   if(!configured)throw Error("Najpierw trzeba podłączyć serwer Cloudflare w pliku api-config.js.");
+   if(!configured)throw Error("Panel jest chwilowo niedostępny. Spróbuj ponownie później.");
    const response=await fetch(API+path,{
      method:options.method||"GET",
      headers:{"Content-Type":"application/json"},
@@ -25,30 +25,6 @@
    const data=await response.json().catch(()=>({}));
    if(!response.ok)throw Error(data.error||"Błąd połączenia z serwerem (HTTP "+response.status+")");
    return data;
- }
- async function checkApi(){
-   const message=$("api-message");
-   if(!configured){
-     message.classList.add("is-offline");
-     message.textContent="Serwer edycji nie został jeszcze podłączony. Administrator musi wdrożyć Cloudflare Worker i ustawić adres w api-config.js. Nie wpisuj tu haseł.";
-     return;
-   }
-   try{
-     const health=await api("/api/health");
-     const ready=!!(health.ok&&health.storage&&health.adminConfigured&&health.githubConfigured);
-     message.classList.toggle("is-online",ready);
-     message.classList.toggle("is-offline",!ready);
-     message.textContent=!health.storage
-       ?"Serwer odpowiada, ale prywatna baza Cloudflare D1 nie została jeszcze podłączona."
-       :!health.adminConfigured
-        ?"Administrator musi jeszcze ustawić tajne hasło ADMIN_SECRET."
-        :!health.githubConfigured
-         ?"Administrator musi jeszcze ustawić tajny token GITHUB_TOKEN do publicznych książek."
-         :"Publiczny GitHub i prywatna D1 są połączone. "+(health.imageAI?"Generator ilustracji dostępny.":"Generator AI wymaga dodatkowego uruchomienia.");
-   }catch(err){
-     message.classList.add("is-offline");
-     message.textContent="Nie udało się połączyć z serwerem ksiąg: "+err.message;
-   }
  }
  function show(view){
    document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("is-active",button.dataset.view===view));
@@ -80,7 +56,7 @@
      const input=document.createElement("input");input.type="text";input.maxLength=160;input.value=photo.caption||"";input.setAttribute("aria-label","Podpis ilustracji "+(index+1));
      input.addEventListener("input",()=>{book.photos[index].caption=input.value});
      const btn=document.createElement("button");btn.className="button button--danger";btn.type="button";btn.textContent="Usuń ilustrację";
-     btn.addEventListener("click",()=>{book.photos.splice(index,1);renderImages();feedback("Obraz usunięto z projektu. Zapisz zmiany online, aby opublikować nową wersję.")});
+     btn.addEventListener("click",()=>{book.photos.splice(index,1);renderImages();feedback("Obraz usunięto z projektu. Zapisz zmiany, aby zatwierdzić nową wersję.")});
      card.append(img,input,btn);list.append(card);
    });
  }
@@ -102,7 +78,7 @@
        .slice(0,35);
      target.replaceChildren();
      if(!books.length){
-       info.textContent="Nie znaleziono księgi. Upewnij się, że została opublikowana online z hasłem.";
+       info.textContent="Nie znaleziono księgi o podanej nazwie.";
        target.append(info);return;
      }
      for(const item of books){
@@ -150,7 +126,7 @@
      if(!ownerId||!ownerPass)throw Error("Najpierw odblokuj księgę.");
      const updated=getBookFromForm();
      const size=new TextEncoder().encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book:updated})).length;
-     if(size>850_000)throw Error("Księga przekracza limit 850 KB pliku GitHub. Usuń lub zmniejsz część ilustracji.");
+     if(size>850_000)throw Error("Księga jest zbyt duża do zapisania. Usuń lub zmniejsz część ilustracji.");
      feedback("Zapisuję kronikę na serwerze…");
      await api("/api/books/"+encodeURIComponent(ownerId),{method:"PUT",body:{password:ownerPass,book:updated}});
      book=updated;
@@ -227,7 +203,7 @@
        book.photos.push({id:crypto.randomUUID(),data,caption:file.name.replace(/\.[^.]+$/,"").slice(0,160)});
      }catch(err){feedback(err.message,true)}
    }
-   renderImages();feedback("Obrazy dodano lokalnie. Kliknij „Zapisz zmiany online”, aby zaktualizować księgę.");
+   renderImages();feedback("Obrazy zostały dodane. Zapisz zmiany, aby zaktualizować księgę.");
  }
  async function crestInput(event){
    const file=event.target.files?.[0];event.target.value="";
@@ -235,7 +211,7 @@
    try{
      book.crest=await shrink(file,500);
      $("crest-status").textContent="Nowy herb wybrany";
-     feedback("Herb dodano. Zapisz zmiany online, aby go opublikować.");
+     feedback("Herb został dodany. Zapisz zmiany, aby go zachować.");
    }catch(err){feedback(err.message,true)}
  }
  function suggestScene(){
@@ -267,7 +243,7 @@
      const compressed=await shrinkGenerated(illustration);
      book.photos.push({id:crypto.randomUUID(),data:compressed,caption:$("scene-prompt").value.trim().slice(0,160)});
      renderImages();$("generated-preview").hidden=true;illustration=null;
-     feedback("Dodano skompresowaną rycinę. Aby udostępnić ją w bibliotece, zapisz zmiany online.");
+     feedback("Dodano rycinę. Zapisz zmiany, aby udostępnić ją w bibliotece.");
    }catch(err){feedback(err.message,true)}
  }
  function adminEntry(item){
@@ -277,7 +253,7 @@
    const subtitle=document.createElement("p");subtitle.textContent=item.subtitle+" · Rok "+item.year;
    const id=document.createElement("code");id.textContent=item.id;
    const status=document.createElement("div");status.className="admin-entry__status"+(item.published?"":" off");
-   status.textContent=item.static?"Księga publiczna z GitHuba":item.published?"Widoczna w bibliotece":"Ukryta";
+   status.textContent=item.static?"Księga archiwalna":item.published?"Widoczna w bibliotece":"Ukryta";
    details.append(title,subtitle,id,status);
    const actions=document.createElement("div");actions.className="admin-entry__actions";
    const toggle=document.createElement("button");toggle.className="button";toggle.type="button";
@@ -337,11 +313,11 @@
    $("change-password").addEventListener("click",changePassword);
    $("edit-images").addEventListener("change",imagesInput);
    $("edit-crest").addEventListener("change",crestInput);
-   $("clear-crest").addEventListener("click",()=>{if(!book)return;book.crest=null;$("crest-status").textContent="Herb usunięty lokalnie";feedback("Zapisz zmiany online, aby usunąć herb z księgi.")});
+   $("clear-crest").addEventListener("click",()=>{if(!book)return;book.crest=null;$("crest-status").textContent="Herb usunięty lokalnie";feedback("Zapisz zmiany, aby usunąć herb z księgi.")});
    $("suggest-scene").addEventListener("click",suggestScene);
    $("generate-image").addEventListener("click",generateImage);
    $("attach-image").addEventListener("click",attachImage);
-   checkApi();
+
  }
  init();
 })();
