@@ -232,21 +232,29 @@ async function handle(request,env){
    return result(request,env,{version:1,books:(rows.results||[]).map(publicRow)});
  }
  if(path==="/api/books"&&request.method==="POST"){
+   let stage="START";
+   try{
+   stage="KONFIGURACJA";
    if(!env.ADMIN_SECRET||env.ADMIN_SECRET.length<16)throw new ApiError(503,"Najpierw skonfiguruj hasło administratora na serwerze.");
+   stage="DANE_KSIEGI";
    const data=await bodyJSON(request);
    const password=data.password;
    if(typeof password!=="string"||password.length<12||password.length>128)throw new ApiError(422,"Hasło musi mieć od 12 do 128 znaków.");
+   stage="LIMITY_IP";
    const quotaKey=await ipKey(request,env,"create:"+today());
    await throttle(env,quotaKey,3,86400);
    const book=validateBook(data.book);
    const id=crypto.randomUUID();
    const salt=toHex(crypto.getRandomValues(new Uint8Array(16)));
+   stage="HASZOWANIE_HASLA";
    const hash=await hashPassword(password,salt);
    const now=timestamp();
    const publicFile={format:"ksiegi-graczy/book",version:1,savedAt:now,book};
+   stage="ZAPIS_PLIKU_GITHUB";
    await githubWrite(env,bookPath(id),publicFile);
    try{
      // D1: wyłącznie metadane i hash hasła. content_json jest pustym polem zgodności ze starszym schematem.
+     stage="REJESTRACJA_D1";
      await env.DB.prepare("INSERT INTO books(id,title,subtitle,year,cover,paper,spine,created_at,updated_at,published,salt,hash,ai_uses,ai_day,content_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
        .bind(id,book.character,book.subtitle,book.year,book.cover,book.paper,book.spine,now,now,1,salt,hash,0,today(),"").run();
    }catch(error){
@@ -254,14 +262,22 @@ async function handle(request,env){
      throw error;
    }
    try{
+     stage="KATALOG_GITHUB";
      await updateCatalog(env,id,publicFromBook(id,book));
    }catch(error){
      try{await env.DB.prepare("DELETE FROM books WHERE id=?").bind(id).run()}catch(rollback){console.error("Nie udało się wycofać wpisu D1:",rollback.message)}
      try{await githubDelete(env,bookPath(id))}catch(rollback){console.error("Nie udało się wycofać pliku GitHub:",rollback.message)}
      throw error;
    }
+   stage="LIMIT_PUBLIKACJI";
    await throttle(env,quotaKey,3,86400,true);
    return result(request,env,{id,published:true,message:"Księga została publicznie opublikowana na GitHubie.",adminNote:"Zachowaj hasło i identyfikator księgi. Hasło nie jest odzyskiwalne."},201);
+   }catch(error){
+     if(error instanceof ApiError)throw error;
+     // Logujemy wyłącznie etap i komunikat błędu, bez hasła, tokenu lub treści księgi.
+     console.error("SKRYPTORIUM_PUBLISH_FAILED",stage,String(error?.message||error));
+     throw new ApiError(500,"Błąd publikacji na etapie: "+stage+". Sprawdź Cloudflare Workers → Observability → Logs.");
+   }
  }
  const single=path.match(/^\/api\/books\/([a-f\d-]{36})$/);
  if(single){
