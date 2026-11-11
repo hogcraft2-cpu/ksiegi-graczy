@@ -1,13 +1,14 @@
-/* Skryptorium API • Cloudflare Workers + D1 + R2 + Workers AI
- * Zero credentials in the public GitHub Pages files.
- * Requires D1 binding DB, R2 binding BOOKS and Cloudflare secret ADMIN_SECRET.
+/* Skryptorium API • Cloudflare Workers + D1 (+ opcjonalne Workers AI).
+ * Bez R2: pełna księga, herb i ilustracje przechowywane w D1 w jednym rekordzie.
+ * Hasła pozostają wyłącznie w bezpiecznym zapleczu.
  */
 const encoder=new TextEncoder();
 const decodeHex=x=>Uint8Array.from(x.match(/.{1,2}/g)||[],c=>parseInt(c,16));
 const toHex=bytes=>Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,"0")).join("");
 const PASSWORD_ITERATIONS=160000;
-const PUBLIC_LIMIT=3_000_000;
-const IMAGE_LIMIT=2_500_000;
+const PUBLIC_LIMIT=1_850_000;
+const BOOK_LIMIT=1_500_000; // D1 limit 2 MB na rekord; zachowujemy bezpieczny zapas
+const IMAGE_LIMIT=400_000;
 const SPINES=["illuminated","ironbound","monastic","merchant"];
 const PAPERS=["classic","royal","battle","monastery","nocturne"];
 const COVERS=["burgundy","forest","midnight","chestnut"];
@@ -35,10 +36,10 @@ class ApiError extends Error{
  constructor(status,message){super(message);this.status=status}
 }
 async function bodyJSON(request){
- if(Number(request.headers.get("Content-Length")||0)>PUBLIC_LIMIT)throw new ApiError(413,"Zbyt duży plik księgi (maks. 3 MB).");
+ if(Number(request.headers.get("Content-Length")||0)>PUBLIC_LIMIT)throw new ApiError(413,"Za duża przesyłka. Zmniejsz zdjęcia i herb (maks. 1,5 MB na księgę).");
  if(!/application\/json/i.test(request.headers.get("Content-Type")||""))throw new ApiError(415,"Oczekiwano danych JSON.");
  const text=await request.text();
- if(text.length>PUBLIC_LIMIT)throw new ApiError(413,"Zbyt duży plik księgi.");
+ if(encoder.encode(text).length>PUBLIC_LIMIT)throw new ApiError(413,"Przesyłka przekracza dozwolony rozmiar.");
  try{return JSON.parse(text)}catch(_){throw new ApiError(400,"Niepoprawny JSON.")}
 }
 async function hashPassword(password,salt){
@@ -90,19 +91,19 @@ function validateBook(raw){
    if(!photo||typeof photo!=="object"||typeof photo.data!=="string"||photo.data.length>IMAGE_LIMIT||!DATA_IMAGE.test(photo.data))throw new ApiError(422,"Jeden z obrazów jest zbyt duży lub ma niepoprawny format.");
    book.photos.push({id:clean(photo.id,50)||crypto.randomUUID(),data:photo.data,caption:clean(photo.caption,160)});
  }
- if(JSON.stringify(book).length>PUBLIC_LIMIT)throw new ApiError(413,"Cała księga przekracza 3 MB. Zmniejsz ilustracje.");
+ if(encoder.encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book})).length>BOOK_LIMIT)throw new ApiError(413,"Księga przekracza limit 1,5 MB w D1. Usuń część ilustracji lub zmniejsz ich rozmiar.");
  return book;
 }
 function publicRow(row){
  return {id:row.id,file:null,title:row.title,subtitle:row.subtitle,year:row.year,cover:row.cover,paper:row.paper,spine:row.spine,updatedAt:row.updated_at};
 }
 async function getRow(env,id){
- return await env.DB.prepare("SELECT * FROM books WHERE id=?").bind(id).first();
+ return await env.DB.prepare("SELECT id,salt,hash,published,ai_day,ai_uses FROM books WHERE id=?").bind(id).first();
 }
 async function objectBook(env,id){
- const object=await env.BOOKS.get("books/"+id+".json");
- if(!object)throw new ApiError(404,"Nie znaleziono pliku księgi.");
- try{return await object.json()}catch(_){throw new ApiError(500,"Plik księgi jest uszkodzony.")}
+ const record=await env.DB.prepare("SELECT content_json FROM books WHERE id=?").bind(id).first();
+ if(!record?.content_json)throw new ApiError(404,"Nie znaleziono księgi.");
+ try{return JSON.parse(record.content_json)}catch(_){throw new ApiError(500,"Dane księgi są uszkodzone.")}
 }
 async function checkOwner(request,env,id,password){
  const row=await getRow(env,id);
@@ -134,16 +135,15 @@ async function checkAdmin(request,env,password){
  await env.DB.prepare("DELETE FROM quotas WHERE key=?").bind(key).run();
 }
 async function deleteBook(env,id){
- await env.BOOKS.delete("books/"+id+".json");
  await env.DB.prepare("DELETE FROM books WHERE id=?").bind(id).run();
 }
 async function handle(request,env){
  const url=new URL(request.url);
  const path=url.pathname.replace(/\/$/,"")||"/";
  if(path==="/api/health"&&request.method==="GET"){
-   return result(request,env,{ok:true,storage:!!env.DB&&!!env.BOOKS,imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16)});
+   return result(request,env,{ok:true,storage:!!env.DB,imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16)});
  }
- if(!env.DB||!env.BOOKS)throw new ApiError(503,"Serwer nie ma podłączonych usług D1 i R2.");
+ if(!env.DB)throw new ApiError(503,"Serwer nie ma podłączonej bazy D1.");
  if(path==="/api/books"&&request.method==="GET"){
    const rows=await env.DB.prepare("SELECT id,title,subtitle,year,cover,paper,spine,updated_at FROM books WHERE published=1 ORDER BY created_at DESC LIMIT 250").all();
    return result(request,env,{version:1,books:(rows.results||[]).map(publicRow)});
@@ -160,12 +160,9 @@ async function handle(request,env){
    const salt=toHex(crypto.getRandomValues(new Uint8Array(16)));
    const hash=await hashPassword(password,salt);
    const now=timestamp();
-   const file={format:"ksiegi-graczy/book",version:1,book};
-   await env.BOOKS.put("books/"+id+".json",JSON.stringify(file),{httpMetadata:{contentType:"application/json"}});
-   try{
-     await env.DB.prepare("INSERT INTO books(id,title,subtitle,year,cover,paper,spine,created_at,updated_at,published,salt,hash,ai_uses,ai_day) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-       .bind(id,book.character,book.subtitle,book.year,book.cover,book.paper,book.spine,now,now,1,salt,hash,0,today()).run();
-   }catch(error){await env.BOOKS.delete("books/"+id+".json");throw error}
+   const content=JSON.stringify({format:"ksiegi-graczy/book",version:1,book});
+   await env.DB.prepare("INSERT INTO books(id,title,subtitle,year,cover,paper,spine,created_at,updated_at,published,salt,hash,ai_uses,ai_day,content_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+     .bind(id,book.character,book.subtitle,book.year,book.cover,book.paper,book.spine,now,now,1,salt,hash,0,today(),content).run();
    await throttle(env,quotaKey,3,86400,true);
    return result(request,env,{id,published:true,message:"Księga została opublikowana.",adminNote:"Zachowaj hasło i identyfikator księgi. Hasło nie jest odzyskiwalne."},201);
  }
@@ -181,9 +178,9 @@ async function handle(request,env){
      const data=await bodyJSON(request);
      const old=await checkOwner(request,env,id,data.password);
      const book=validateBook(data.book);
-     await env.BOOKS.put("books/"+id+".json",JSON.stringify({format:"ksiegi-graczy/book",version:1,book}),{httpMetadata:{contentType:"application/json"}});
-     await env.DB.prepare("UPDATE books SET title=?,subtitle=?,year=?,paper=?,cover=?,spine=?,updated_at=? WHERE id=?")
-       .bind(book.character,book.subtitle,book.year,book.paper,book.cover,book.spine,timestamp(),id).run();
+     const content=JSON.stringify({format:"ksiegi-graczy/book",version:1,book});
+     await env.DB.prepare("UPDATE books SET title=?,subtitle=?,year=?,paper=?,cover=?,spine=?,updated_at=?,content_json=? WHERE id=?")
+       .bind(book.character,book.subtitle,book.year,book.paper,book.cover,book.spine,timestamp(),content,id).run();
      return result(request,env,{ok:true,id,published:!!old.published});
    }
    if(request.method==="DELETE"){
