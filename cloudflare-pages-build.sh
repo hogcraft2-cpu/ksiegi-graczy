@@ -4,7 +4,7 @@
 set -euo pipefail
 
 mkdir -p dist
-cp   index.html app.js styles.css spine.css manuscript-themes.css   biblioteka.html biblioteka.js biblioteka.css   zarzadzanie.html panel.js panel.css   api-config.js   dist/
+cp   index.html app.js styles.css spine.css manuscript-themes.css illustration-placement.css book-layout.js   biblioteka.html biblioteka.js biblioteka.css   zarzadzanie.html panel.js panel.css   api-config.js   dist/
 
 # Publiczny katalog kronik i treści — wymagane w bibliotece.
 cp -R books dist/
