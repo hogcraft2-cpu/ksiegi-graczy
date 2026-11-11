@@ -89,9 +89,27 @@
     const label=make("book-spine__label");
     const title=document.createElement("span");title.className="book-spine__title";title.textContent=item.title;
     const divider=make("book-spine__divider","❦");
-    const subtitle=document.createElement("span");subtitle.className="book-spine__subtitle";subtitle.textContent=item.subtitle;
-    title.setAttribute("aria-hidden","true");subtitle.setAttribute("aria-hidden","true");
-    label.append(title,divider,subtitle);
+    // Dłuższy podtytuł rozkładamy na dwa pionowe wiersze, zamiast go ucinać.
+    function subtitleLines(value){
+      const words=String(value||"").trim().split(/\\s+/).filter(Boolean);
+      if(value.length<=23||words.length<3)return [value];
+      let best=1,min=Infinity;
+      for(let i=1;i<words.length;i++){
+        const first=words.slice(0,i).join(" "),second=words.slice(i).join(" ");
+        const diff=Math.abs(first.length-second.length);
+        if(diff<min){min=diff;best=i}
+      }
+      return [words.slice(0,best).join(" "),words.slice(best).join(" ")];
+    }
+    const subtitles=subtitleLines(item.subtitle).map(line=>{
+      const sub=document.createElement("span");
+      sub.className="book-spine__subtitle";
+      sub.textContent=line;
+      sub.setAttribute("aria-hidden","true");
+      return sub;
+    });
+    title.setAttribute("aria-hidden","true");
+    label.append(title,divider,...subtitles);
     const year=make("book-spine__year",item.year||"✣");
     cartouche.append(rosette,monogram,label,year);
     button.append(edge,grain,frame,ridges,clasps,top,bottom,cartouche);
