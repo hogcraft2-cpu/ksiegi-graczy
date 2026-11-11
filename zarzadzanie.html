@@ -28,10 +28,19 @@
   </div>
   <section id="owner" class="panel" aria-label="Panel właściciela">
     <div id="owner-login">
-      <div class="section-title"><span>01</span><div><h3>Otwórz swoją księgę</h3><p>Podaj identyfikator otrzymany podczas publikacji i ustalone hasło.</p></div></div>
+      <div class="section-title"><span>01</span><div><h3>Otwórz swoją księgę</h3><p>Podaj identyfikator i hasło. Jeśli nie pamiętasz ID, znajdź księgę po imieniu postaci.</p></div></div>
+      <div class="book-finder">
+        <label for="book-search">Znajdź identyfikator księgi po tytule</label>
+        <div class="book-finder__search">
+          <input id="book-search" type="search" placeholder="Np. Vojtiech Havel" autocomplete="off">
+          <button id="search-books" type="button" class="button">Szukaj księgi</button>
+        </div>
+        <div id="found-books" class="book-finder__results" role="status" aria-live="polite"></div>
+        <p class="note">Wyszukiwanie pokazuje jedynie tytuły i publiczne identyfikatory. Do edycji nadal potrzebne jest hasło właściciela.</p>
+      </div>
       <form id="owner-form" class="form-grid">
         <label>Identyfikator księgi<input id="owner-id" type="text" required spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"></label>
-        <label>Hasło właściciela<input id="owner-password" type="password" minlength="12" required autocomplete="current-password" placeholder="Hasło utworzone dla tej księgi"></label>
+        <label>Hasło właściciela<input id="owner-password" type="password" required autocomplete="current-password" placeholder="Hasło utworzone dla tej księgi"></label>
         <button type="submit" class="button button--gold" id="owner-open">Otwórz edycję księgi</button>
       </form>
     </div>
@@ -68,8 +77,8 @@
       </div>
       <div class="subpanel subpanel--danger">
         <h4>Hasło i usunięcie księgi</h4>
-        <p>Zmień hasło na nowe (co najmniej 12 znaków), jeśli chcesz. Usunięcie księgi jest nieodwracalne.</p>
-        <div class="actions"><input id="new-password" type="password" minlength="12" placeholder="Nowe hasło" autocomplete="new-password"><button type="button" id="change-password" class="button">Zmień hasło</button></div>
+        <p>Zmień hasło na nowe, jeśli chcesz. Wybierz silne i unikatowe hasło. Usunięcie księgi jest nieodwracalne.</p>
+        <div class="actions"><input id="new-password" type="password" placeholder="Nowe hasło" autocomplete="new-password"><button type="button" id="change-password" class="button">Zmień hasło</button></div>
         <button type="button" id="delete-owner" class="button button--danger">Usuń moją księgę</button>
       </div>
     </div>
