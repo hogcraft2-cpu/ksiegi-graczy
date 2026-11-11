@@ -8,6 +8,7 @@
   const SAFE_IMAGE=/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
   const COVERS=["burgundy","forest","midnight","chestnut"];
   const PAPERS=["classic","royal","battle","monastery","nocturne"];
+  const SPINES=["illuminated","ironbound","monastic","merchant"];
   const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const safeImage=value=>typeof value==="string"&&value.length<8_000_000&&(SAFE_IMAGE.test(value)||SAFE_ASSET.test(value))?value:null;
   const cleaned=(value,max=300)=>typeof value==="string"?value.slice(0,max):"";
@@ -31,7 +32,8 @@
       subtitle:cleaned(item.subtitle,110)||"Dzieje bohatera",
       year:cleaned(item.year,30),
       cover:COVERS.includes(item.cover)?item.cover:"burgundy",
-      paper:PAPERS.includes(item.paper)?item.paper:"classic"
+      paper:PAPERS.includes(item.paper)?item.paper:"classic",
+      spine:SPINES.includes(item.spine)?item.spine:"illuminated"
     }));
   }
   async function loadCatalog(){
@@ -57,9 +59,8 @@
     button.className="book-spine";
     button.type="button";
     button.dataset.cover=item.cover;
-    // Cztery rodzaje skórzanych opraw: każda otrzymuje inny detal rzemieślniczy.
-    const finishes=["illuminated","ironbound","monastic","merchant"];
-    button.dataset.finish=finishes[index%finishes.length];
+    // Grzbiet wybrany przez autora i zapisany w katalogu, niezależnie od kolejności książek.
+    button.dataset.finish=item.spine;
     button.style.setProperty("--book-height",String(235+(index*17)%35)+"px");
     button.style.setProperty("--book-width",String(94+(index*7)%12)+"px");
     button.style.setProperty("--tilt",((index%7)-3)*.46+"deg");
@@ -159,6 +160,7 @@
       crest:safeImage(raw.crest),
       paper:PAPERS.includes(raw.paper)?raw.paper:item.paper,
       cover:COVERS.includes(raw.cover)?raw.cover:item.cover,
+      spine:SPINES.includes(raw.spine)?raw.spine:item.spine,
       photos:Array.isArray(raw.photos)?raw.photos.slice(0,12).map(p=>({
         data:safeImage(p?.data),
         caption:cleaned(p?.caption,160)
