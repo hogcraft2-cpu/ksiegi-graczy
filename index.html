@@ -130,17 +130,19 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
             <h2>Opublikuj księgę z hasłem</h2>
             <p class="description">Publiczna historia, herb i zdjęcia zostaną zapisane w repozytorium GitHub. Indywidualne hasło służy do późniejszej edycji i usuwania, a jego hash pozostanie w prywatnej bazie Cloudflare.</p>
             <p class="hint"><strong>Ważne:</strong> opublikowane treści są jawne, również w historii zmian GitHuba. Usunięcie książki z półki nie wymazuje wcześniejszych wersji. Nie dodawaj danych poufnych.</p>
-            <label for="publish-password">Hasło właściciela (minimum 12 znaków)</label>
-            <input id="publish-password" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Ustal silne, unikatowe hasło">
+            <label for="publish-password">Hasło właściciela</label>
+            <input id="publish-password" type="password" autocomplete="new-password" placeholder="Ustal silne, unikatowe hasło">
+            <p class="hint">Nie narzucamy długości hasła. Dla bezpieczeństwa użyj długiego, unikatowego hasła.</p>
             <label for="publish-confirm">Powtórz hasło</label>
-            <input id="publish-confirm" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Powtórz hasło">
+            <input id="publish-confirm" type="password" autocomplete="new-password" placeholder="Powtórz hasło">
             <button id="publish-online" type="button" class="button button--gold">Opublikuj księgę online</button>
             <p class="hint" id="online-status" role="status">Sprawdzanie połączenia z serwerem książek…</p>
             <div id="publish-result" class="publish-result" hidden>
               <strong>Twoja księga jest dostępna w bibliotece.</strong>
               <p>Identyfikator księgi (zachowaj go razem z hasłem):</p>
-              <code id="published-id"></code>
-              <p><a href="./zarzadzanie.html">Przejdź do panelu edycji i generatora ilustracji →</a></p>
+              <div class="published-identity"><code id="published-id"></code><button type="button" id="copy-book-id" class="button button--gold">Kopiuj ID</button></div>
+              <p><a id="published-manage-link" href="./zarzadzanie.html">Otwórz tę księgę w panelu edycji →</a></p>
+              <p class="hint">Jeśli zgubisz identyfikator, wyszukasz go po nazwie postaci w panelu edycji.</p>
             </div>
           </div>
           <div class="future-note"><strong>Publiczna biblioteka</strong><p>Po podłączeniu Workera opublikowana księga zostanie zapisana automatycznie na GitHubie i pojawi się w bibliotece po aktualizacji katalogu. Do czasu uruchomienia API możesz pobrać projekt JSON i zachować go na dysku.</p><p><a href="./biblioteka.html">Przejdź do biblioteki ksiąg →</a></p></div>
