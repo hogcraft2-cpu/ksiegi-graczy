@@ -108,17 +108,17 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
           </label>
           <input id="photos-upload" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
           <div class="photo-list" id="photo-list" aria-live="polite"></div>
-          <p class="hint">Obrazy są zmniejszane w przeglądarce. Nie wysyłamy ich na serwer — pozostają w Twoim projekcie.</p>
+          <p class="hint">Dodane obrazy są automatycznie zmniejszane i zapisywane razem z księgą.</p>
         </section>
 
         <section class="edit-panel" id="panel-save" data-panel="save" hidden>
           <div class="section-heading">✥ &nbsp; Zachowaj swój rękopis</div>
-          <h2>Zapis księgi</h2><p class="description">Na tym etapie zapisujemy projekt księgi. W przyszłości zbudujemy osobną bibliotekę z półkami i grzbietami ksiąg.</p>
+          <h2>Zapis księgi</h2><p class="description">Zachowaj własną kopię rękopisu albo opublikuj go w bibliotece, aby inni mogli przeczytać Twoją historię.</p>
           <div class="export-card">
             <div class="export-card__icon">✒</div>
             <div>
               <h3>Plik księgi (JSON)</h3>
-              <p>Zapisuje historię, styl kartek, oprawę, herb i ilustracje. Ten format wykorzystamy później przy dodawaniu ksiąg do biblioteki.</p>
+              <p>Pobierz pełną kopię księgi wraz z historią, herbem, ilustracjami i wybranym wyglądem.</p>
               <button type="button" id="save-json" class="button button--gold">Pobierz księgę .json</button>
             </div>
           </div>
@@ -134,15 +134,15 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
           <div class="publish-online">
             <div class="section-heading">✥ &nbsp; Publikacja w bibliotece</div>
             <h2>Opublikuj księgę z hasłem</h2>
-            <p class="description">Publiczna historia, herb i zdjęcia zostaną zapisane w repozytorium GitHub. Indywidualne hasło służy do późniejszej edycji i usuwania, a jego hash pozostanie w prywatnej bazie Cloudflare.</p>
-            <p class="hint"><strong>Ważne:</strong> opublikowane treści są jawne, również w historii zmian GitHuba. Usunięcie książki z półki nie wymazuje wcześniejszych wersji. Nie dodawaj danych poufnych.</p>
+            <p class="description">Opublikuj swoją historię, aby inni gracze mogli odnaleźć ją na półkach biblioteki. Ustal hasło, dzięki któremu później zmienisz treść lub usuniesz księgę.</p>
+            <p class="hint"><strong>Ważne:</strong> księga i jej ilustracje będą dostępne publicznie. Po usunięciu wcześniejsze wersje mogą pozostać w archiwach. Nie dodawaj danych poufnych.</p>
             <label for="publish-password">Hasło właściciela</label>
             <input id="publish-password" type="password" autocomplete="new-password" placeholder="Ustal silne, unikatowe hasło">
             <p class="hint">Nie narzucamy długości hasła. Dla bezpieczeństwa użyj długiego, unikatowego hasła.</p>
             <label for="publish-confirm">Powtórz hasło</label>
             <input id="publish-confirm" type="password" autocomplete="new-password" placeholder="Powtórz hasło">
-            <button id="publish-online" type="button" class="button button--gold">Opublikuj księgę online</button>
-            <p class="hint" id="online-status" role="status">Sprawdzanie połączenia z serwerem książek…</p>
+            <button id="publish-online" type="button" class="button button--gold">Opublikuj księgę</button>
+            <p class="hint" id="online-status" role="status" hidden></p>
             <div id="publish-result" class="publish-result" hidden>
               <strong>Twoja księga jest dostępna w bibliotece.</strong>
               <p>Identyfikator księgi (zachowaj go razem z hasłem):</p>
@@ -151,7 +151,7 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
               <p class="hint">Jeśli zgubisz identyfikator, wyszukasz go po nazwie postaci w panelu edycji.</p>
             </div>
           </div>
-          <div class="future-note"><strong>Publiczna biblioteka</strong><p>Po podłączeniu Workera opublikowana księga zostanie zapisana automatycznie na GitHubie i pojawi się w bibliotece po aktualizacji katalogu. Do czasu uruchomienia API możesz pobrać projekt JSON i zachować go na dysku.</p><p><a href="./biblioteka.html">Przejdź do biblioteki ksiąg →</a></p></div>
+          
           <button id="clear-project" class="text-button danger" type="button">Wyczyść i rozpocznij nowy rękopis</button>
         </section>
       </div>
