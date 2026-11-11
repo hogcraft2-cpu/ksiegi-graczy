@@ -91,7 +91,7 @@
     const divider=make("book-spine__divider","❦");
     // Dłuższy podtytuł rozkładamy na dwa pionowe wiersze, zamiast go ucinać.
     function subtitleLines(value){
-      const words=String(value||"").trim().split(/\\s+/).filter(Boolean);
+      const words=String(value||"").trim().split(/\s+/).filter(Boolean);
       if(value.length<=23||words.length<3)return [value];
       let best=1,min=Infinity;
       for(let i=1;i<words.length;i++){
