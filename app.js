@@ -223,7 +223,7 @@
     paper:"classic", cover:"burgundy", spine:"illuminated", frame:"plain", crest:null, photos:[]
   });
   const SAFE_IMAGE = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
-  const SCENE_IMAGE = /^assets\/scenes\/scene-(?:0[1-9]|10)\.webp$/;
+  const SCENE_IMAGE = /^assets\/scenes\/scene-(?:0[1-9]|[1-4][0-9]|50)\.webp$/;
   const MAX_IMAGES = 12;
   let state = DEFAULT();
   let pages = [];
@@ -383,6 +383,7 @@
       sceneCatalog=parsed.scenes.filter(item=>item&&SCENE_IMAGE.test(item.src)&&typeof item.title==="string")
         .map(item=>({id:item.id,title:item.title,category:String(item.category||"Inne"),src:item.src,
           tags:Array.isArray(item.tags)?item.tags.join(" "):""}));
+      $("scene-total").textContent=String(sceneCatalog.length);
       const categories=[...new Set(sceneCatalog.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,"pl"));
       const picker=$("scene-category");
       categories.forEach(category=>{
