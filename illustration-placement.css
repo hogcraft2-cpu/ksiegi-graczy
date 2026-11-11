@@ -113,3 +113,47 @@
  .illustration-figure[data-size="large"] img{height:142px}
  .illustration-figure[data-size="small"] img{height:82px}
 }
+
+
+/* Zwijana biblioteka iluminacji: do chwili kliknięcia nie zajmuje miejsca. */
+.scene-library{
+  border:1px solid #967046;
+  background:linear-gradient(145deg,#36281a,#241a12);
+  box-shadow:0 6px 18px #07040255,inset 0 0 0 1px #c39b5422;
+  margin:14px 0;
+}
+.scene-library__toggle{
+  display:flex;align-items:center;gap:12px;
+  min-height:64px;padding:11px 13px;
+  cursor:pointer;list-style:none;user-select:none;
+  color:#eed1a0;
+  transition:background .2s ease;
+}
+.scene-library__toggle::-webkit-details-marker{display:none}
+.scene-library__toggle::marker{content:""}
+.scene-library__toggle:hover,.scene-library__toggle:focus-visible{
+  background:#6d4b2c46;
+}
+.scene-library__toggle:focus-visible{outline:2px solid #f1ca87;outline-offset:2px}
+.scene-library__symbol{
+  flex:0 0 41px;height:41px;display:grid;place-items:center;
+  border:1px double #d7ae6e;background:#50351e;
+  font-size:24px;color:#e9c27c;
+}
+.scene-library__labels{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.scene-library__labels strong{font:500 15px/1.2 'Cinzel',Georgia,serif}
+.scene-library__labels small{font:13px/1.1 'EB Garamond',Georgia,serif;color:#bca483}
+.scene-library__opened{display:none}
+.scene-library[open] .scene-library__closed{display:none}
+.scene-library[open] .scene-library__opened{display:inline}
+.scene-library__chevron{font:28px Georgia,serif;transition:transform .25s;opacity:.8}
+.scene-library[open] .scene-library__chevron{transform:rotate(180deg)}
+.scene-library__body{border-top:1px solid #82613e;padding:13px}
+.scene-library .scene-filters{margin:2px 0 13px}
+.scene-library .scene-gallery{max-height:450px}
+@media(max-width:560px){
+ .scene-library__toggle{padding:9px;gap:8px}
+ .scene-library__labels strong{font-size:12px}
+ .scene-library__body{padding:8px}
+ .scene-library .scene-gallery{max-height:390px}
+}
