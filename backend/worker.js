@@ -141,7 +141,7 @@ async function handle(request,env){
  const url=new URL(request.url);
  const path=url.pathname.replace(/\/$/,"")||"/";
  if(path==="/api/health"&&request.method==="GET"){
-   return result(request,env,{ok:true,storage:!!env.DB&&!!env.BOOKS,imageAI:!!env.AI});
+   return result(request,env,{ok:true,storage:!!env.DB&&!!env.BOOKS,imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16)});
  }
  if(!env.DB||!env.BOOKS)throw new ApiError(503,"Serwer nie ma podłączonych usług D1 i R2.");
  if(path==="/api/books"&&request.method==="GET"){
@@ -149,6 +149,7 @@ async function handle(request,env){
    return result(request,env,{version:1,books:(rows.results||[]).map(publicRow)});
  }
  if(path==="/api/books"&&request.method==="POST"){
+   if(!env.ADMIN_SECRET||env.ADMIN_SECRET.length<16)throw new ApiError(503,"Najpierw skonfiguruj hasło administratora na serwerze.");
    const data=await bodyJSON(request);
    const password=data.password;
    if(typeof password!=="string"||password.length<12||password.length>128)throw new ApiError(422,"Hasło musi mieć od 12 do 128 znaków.");
