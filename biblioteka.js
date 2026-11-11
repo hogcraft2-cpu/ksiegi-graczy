@@ -62,7 +62,9 @@
         }));
       }catch(error){errors.push("Serwer ksiąg: "+error.message)}
     }
-    library=[...onlineItems,...staticItems];
+    // Ta sama księga może być widoczna równocześnie w GitHub Pages i w świeżym API.
+    // API ma pierwszeństwo, więc na półce nie pojawiają się duble.
+    library=[...new Map([...staticItems,...onlineItems].map(item=>[item.id,item])).values()];
     if(library.length)filterBooks();
     else{
       $("shelves").replaceChildren();
