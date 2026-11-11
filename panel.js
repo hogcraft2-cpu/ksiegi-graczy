@@ -106,6 +106,8 @@
    try{
      if(!ownerId||!ownerPass)throw Error("Najpierw odblokuj księgę.");
      const updated=getBookFromForm();
+     const size=new TextEncoder().encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book:updated})).length;
+     if(size>1_500_000)throw Error("Księga przekracza limit 1,5 MB D1. Usuń lub zmniejsz część ilustracji.");
      feedback("Zapisuję kronikę na serwerze…");
      await api("/api/books/"+encodeURIComponent(ownerId),{method:"PUT",body:{password:ownerPass,book:updated}});
      book=updated;
@@ -133,6 +135,29 @@
      feedback("Hasło zmieniono. Zapisz je w bezpiecznym miejscu.");
    }catch(err){feedback(err.message,true)}
  }
+ async function compressImage(img,max=960,target=160_000){
+   const scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+   const canvas=document.createElement("canvas");
+   canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+   canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+   canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+   let data="";
+   for(const q of [.74,.60,.46,.32,.22]){
+     data=canvas.toDataURL("image/webp",q);
+     if(data.length<=target)return data;
+   }
+   for(let n=0;n<7;n++){
+     const small=document.createElement("canvas");
+     small.width=Math.max(1,Math.round(canvas.width*.82));
+     small.height=Math.max(1,Math.round(canvas.height*.82));
+     small.getContext("2d").drawImage(canvas,0,0,small.width,small.height);
+     canvas.width=small.width;canvas.height=small.height;
+     canvas.getContext("2d").drawImage(small,0,0);
+     data=canvas.toDataURL("image/webp",.42);
+     if(data.length<=target)return data;
+   }
+   throw Error("Obraz jest za duży — użyj mniejszego pliku.");
+ }
  async function shrink(file,max=960){
    if(!["image/png","image/jpeg","image/webp"].includes(file.type))throw Error("Dozwolone są obrazy JPG, PNG i WebP.");
    if(file.size>15_000_000)throw Error("Obraz jest zbyt duży (maks. 15 MB).");
@@ -140,16 +165,14 @@
    try{
      const image=new Image();image.src=url;
      await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error("Nie udało się odczytać obrazu."))});
-     const ratio=Math.min(1,max/Math.max(image.naturalWidth,image.naturalHeight));
-     const canvas=document.createElement("canvas");
-     canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
-     canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
-     const ctx=canvas.getContext("2d");if(!ctx)throw Error("Brak obsługi obrazów.");
-     ctx.drawImage(image,0,0,canvas.width,canvas.height);
-     const data=canvas.toDataURL("image/webp",.74);
-     if(data.length>800000)throw Error("Obraz po przetworzeniu jest za duży.");
-     return data;
+     return await compressImage(image,max,max<=500?105_000:160_000);
    }finally{URL.revokeObjectURL(url)}
+ }
+ async function shrinkGenerated(dataURL){
+   if(typeof dataURL!=="string"||!/^data:image\/(?:png|jpeg|webp);base64,/i.test(dataURL))throw Error("Niepoprawny obraz AI.");
+   const image=new Image();image.src=dataURL;
+   await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error("Nie udało się wczytać wygenerowanego obrazu."))});
+   return compressImage(image,960,160_000);
  }
  async function imagesInput(event){
    const files=Array.from(event.target.files||[]);event.target.value="";
@@ -193,12 +216,15 @@
    }catch(err){feedback(err.message,true)}
    finally{button.disabled=false}
  }
- function attachImage(){
+ async function attachImage(){
    if(!illustration)return;
    if(book.photos.length>=photoCap){feedback("Księga ma już 12 ilustracji.",true);return}
-   book.photos.push({id:crypto.randomUUID(),data:illustration,caption:$("scene-prompt").value.trim().slice(0,160)});
-   renderImages();$("generated-preview").hidden=true;illustration=null;
-   feedback("Dodano rycinę. Aby udostępnić ją w bibliotece, zapisz zmiany online.");
+   try{
+     const compressed=await shrinkGenerated(illustration);
+     book.photos.push({id:crypto.randomUUID(),data:compressed,caption:$("scene-prompt").value.trim().slice(0,160)});
+     renderImages();$("generated-preview").hidden=true;illustration=null;
+     feedback("Dodano skompresowaną rycinę. Aby udostępnić ją w bibliotece, zapisz zmiany online.");
+   }catch(err){feedback(err.message,true)}
  }
  function adminEntry(item){
    const row=document.createElement("article");row.className="admin-entry";
