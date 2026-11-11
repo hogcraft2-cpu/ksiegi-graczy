@@ -8,6 +8,8 @@ const toHex=bytes=>Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2
 // Cloudflare Workers odrzuca >100 000 iteracji PBKDF2 (NotSupportedError).
 // Zachowujemy losową sól 128-bitową; w razie migracji istniejących rekordów trzeba uwzględnić ich koszt.
 const PASSWORD_ITERATIONS=100000;
+const MAX_PASSWORD_BYTES=4096; // jedynie zabezpieczenie techniczne, bez limitu znaków w formularzu
+function validOwnerPassword(value){return typeof value==="string"&&value.length>0&&encoder.encode(value).byteLength<=MAX_PASSWORD_BYTES}
 const PUBLIC_LIMIT=1_850_000;
 const BOOK_LIMIT=850_000; // GitHub Contents API: plik JSON zachowujemy poniżej 1 MB
 const IMAGE_LIMIT=250_000;
@@ -192,7 +194,7 @@ async function checkOwner(request,env,id,password){
  if(!row)throw new ApiError(404,"Księga nie istnieje.");
  const key=await ipKey(request,env,"owner:"+id);
  await throttle(env,key,6,15*60);
- if(typeof password!=="string"||password.length>160||password.length<1){
+ if(!validOwnerPassword(password)){
    await throttle(env,key,6,15*60,true);
    throw new ApiError(401,"Niepoprawne hasło.");
  }
@@ -241,7 +243,7 @@ async function handle(request,env){
    stage="DANE_KSIEGI";
    const data=await bodyJSON(request);
    const password=data.password;
-   if(typeof password!=="string"||password.length<12||password.length>128)throw new ApiError(422,"Hasło musi mieć od 12 do 128 znaków.");
+   if(!validOwnerPassword(password))throw new ApiError(422,"Podaj hasło właściciela. Maksymalny techniczny rozmiar to 4096 bajtów.");
    stage="LIMITY_IP";
    const quotaKey=await ipKey(request,env,"create:"+today());
    await throttle(env,quotaKey,3,86400);
@@ -318,7 +320,7 @@ async function handle(request,env){
  if(change&&request.method==="POST"){
    const data=await bodyJSON(request);
    await checkOwner(request,env,change[1],data.password);
-   if(typeof data.newPassword!=="string"||data.newPassword.length<12||data.newPassword.length>128)throw new ApiError(422,"Nowe hasło musi mieć od 12 do 128 znaków.");
+   if(!validOwnerPassword(data.newPassword))throw new ApiError(422,"Podaj nowe hasło właściciela. Maksymalny techniczny rozmiar to 4096 bajtów.");
    const salt=toHex(crypto.getRandomValues(new Uint8Array(16)));
    const hash=await hashPassword(data.newPassword,salt);
    await env.DB.prepare("UPDATE books SET salt=?,hash=? WHERE id=?").bind(salt,hash,change[1]).run();
