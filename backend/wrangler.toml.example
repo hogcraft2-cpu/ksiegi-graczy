@@ -3,6 +3,8 @@ main = "worker.js"
 compatibility_date = "2026-10-01"
 
 [vars]
+# Wymień na domenę, z której korzysta kreator.
+# Kilka adresów rozdziel przecinkami.
 ALLOWED_ORIGINS = "https://hogcraft2-cpu.github.io"
 
 [[d1_databases]]
@@ -10,12 +12,12 @@ binding = "DB"
 database_name = "ksiegi-graczy-db"
 database_id = "WPISZ_ID_BAZY_D1"
 
-# R2 nie jest potrzebne: książki, zdjęcia i herby przechowuje D1.
+# Nie jest potrzebne R2. Publiczne kroniki Worker zapisuje na GitHubie.
+# Sekrety Workera (nigdy w tym pliku):
+#   npx wrangler secret put GITHUB_TOKEN
+#   npx wrangler secret put ADMIN_SECRET
+#   npx wrangler secret put RATE_SALT
 
+# Opcjonalnie: ilustracje historyczne z Workers AI.
 [ai]
 binding = "AI"
-
-# Hasło administratora i sól limitów ustaw przez:
-# npx wrangler secret put ADMIN_SECRET
-# npx wrangler secret put RATE_SALT
-# Nigdy nie wstawiaj ich do pliku TOML ani do kodu JavaScript.
