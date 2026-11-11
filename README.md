@@ -32,7 +32,7 @@ Publiczna średniowieczna biblioteka postaci oraz kreator ksiąg w stylu Kingdom
 
 **Panel właściciela:** publikacja książki z indywidualnym hasłem, zapamiętanie jej UUID, późniejsza edycja, zmiana hasła i usuwanie po weryfikacji.
 
-**Panel administratora:** lista książek zarządzanych przez API, ukrywanie/przywracanie, usuwanie bez znajomości haseł właścicieli. Wcześniejsze statyczne księgi, np. Vojtiecha, wymagają osobnego zarządzania przez GitHub, dopóki nie zostaną zaimportowane do prywatnej D1 jako rekordy właścicielskie.
+**Panel administratora:** lista książek zarządzanych przez API, ukrywanie/przywracanie, usuwanie bez znajomości haseł właścicieli. Administrator widzi też wcześniejsze statyczne księgi z katalogu, np. Vojtiecha, i może je usuwać (bez funkcji ukrywania dla tych starych wpisów).
 
 **Ilustracje AI:** generowanie inspirowane Czechami około 1400 roku, opcjonalny Workers AI, 3 próby dziennie na jedną księgę. Wyniki mogą zawierać nieścisłości historyczne.
 
