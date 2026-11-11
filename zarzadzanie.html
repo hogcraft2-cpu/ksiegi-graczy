@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#19120d">
+  <meta name="description" content="Zarządzaj własną księgą postaci — edytuj, dodawaj ilustracje i usuwaj ją po podaniu hasła.">
+  <title>Skryptorium — Zarządzanie księgą</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./panel.css">
+  <script src="./api-config.js"></script><script defer src="./panel.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand"><span class="brand-mark">✥</span><div><small>SKRYPTORIUM · DOMUS LIBRORUM</small><h1>Panel ksiąg</h1></div></div>
+  <nav><a href="./index.html">✒ Kreator</a><a href="./biblioteka.html">❧ Biblioteka</a></nav>
+</header>
+<main class="workspace">
+  <section class="intro">
+    <p class="eyebrow">PRYWATNA PRACOWNIA KRONIKARZA</p>
+    <h2>Opieka nad <em>rękopisami</em></h2>
+    <p>Każda księga może mieć własne hasło. Tylko jej właściciel może zmieniać treść albo ją usunąć; administrator może zarządzać wszystkimi księgami. Hasła nie są zapisywane w przeglądarce.</p>
+    <p class="api-message" id="api-message" role="status">Sprawdzanie połączenia z serwerem ksiąg…</p>
+  </section>
+  <div class="switcher" role="group" aria-label="Wybierz panel">
+    <button class="switcher__button is-active" data-view="owner" type="button">✒ Moja księga</button>
+    <button class="switcher__button" data-view="admin" type="button">♜ Administrator</button>
+  </div>
+  <section id="owner" class="panel" aria-label="Panel właściciela">
+    <div id="owner-login">
+      <div class="section-title"><span>01</span><div><h3>Otwórz swoją księgę</h3><p>Podaj identyfikator otrzymany podczas publikacji i ustalone hasło.</p></div></div>
+      <form id="owner-form" class="form-grid">
+        <label>Identyfikator księgi<input id="owner-id" type="text" required spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off"></label>
+        <label>Hasło właściciela<input id="owner-password" type="password" minlength="12" required autocomplete="current-password" placeholder="Hasło utworzone dla tej księgi"></label>
+        <button type="submit" class="button button--gold" id="owner-open">Otwórz edycję księgi</button>
+      </form>
+    </div>
+    <div id="owner-editor" hidden>
+      <div class="section-title"><span>02</span><div><h3 id="editing-title">Edycja kroniki</h3><p id="editing-id">Trwa wczytywanie…</p></div></div>
+      <div class="edit-grid">
+        <label>Imię postaci<input id="edit-character" maxlength="85" required></label>
+        <label>Podtytuł księgi<input id="edit-subtitle" maxlength="110"></label>
+        <label>Rok<input id="edit-year" maxlength="30"></label>
+        <label>Kronikarz<input id="edit-author" maxlength="100"></label>
+        <label>Rodzaj pergaminu<select id="edit-paper"><option value="classic">Klasyczny</option><option value="royal">Królewski</option><option value="battle">Bitewny</option><option value="monastery">Zakonny</option><option value="nocturne">Nocny</option></select></label>
+        <label>Kolor skóry<select id="edit-cover"><option value="burgundy">Bordowy</option><option value="forest">Zielony</option><option value="midnight">Granatowy</option><option value="chestnut">Brązowy</option></select></label>
+        <label>Wygląd grzbietu<select id="edit-spine"><option value="illuminated">Iluminowany</option><option value="ironbound">Żelazny</option><option value="monastic">Zakonny</option><option value="merchant">Kupiecki</option></select></label>
+      </div>
+      <label>Wprowadzenie<textarea id="edit-summary" rows="4" maxlength="700"></textarea></label>
+      <label>Historia postaci<textarea id="edit-story" rows="13" maxlength="100000"></textarea></label>
+      <div class="subpanel">
+        <h4>Herb i ilustracje</h4>
+        <div class="asset-fields"><label class="file-label">Zastąp herb <input id="edit-crest" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="clear-crest" class="text-button" type="button">Usuń herb</button><span id="crest-status">Brak herbu</span></div>
+        <label class="file-label">Dodaj własne ilustracje<input id="edit-images" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
+        <div id="edit-images-list" class="image-grid"></div>
+      </div>
+      <div class="subpanel">
+        <h4>Ilustrator kroniki · rok 1400</h4>
+        <p>Opisz scenę z historii: miejsce, postacie, ubiór i wydarzenie. Sztuczna inteligencja spróbuje przedstawić ją jako iluminowaną rycinę z początku XV wieku.</p>
+        <label>Scena do zilustrowania<textarea id="scene-prompt" rows="4" maxlength="650" placeholder="Np. Młody giermek przed bramą zamku w zimowy poranek, obok koń i rycerz w zbroi…"></textarea></label>
+        <div class="actions"><button type="button" id="suggest-scene" class="button">Użyj fragmentu historii</button><button type="button" id="generate-image" class="button button--gold">✦ Wygeneruj ilustrację</button></div>
+        <div class="generated" id="generated-preview" hidden><img id="generated-image" alt="Wygenerowana ilustracja w stylu roku 1400"><div><button type="button" class="button" id="attach-image">Dodaj do księgi</button><small>Po dodaniu wybierz „Zapisz zmiany online”.</small></div></div>
+        <p class="note">Generator wymaga połączenia z Cloudflare Workers AI. Limit wynosi 3 obrazy dziennie na jedną księgę; wygenerowana scena może zawierać nieścisłości historyczne.</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="save-edits" class="button button--gold">Zapisz zmiany online</button>
+        <button type="button" id="leave-editor" class="button">Zamknij edytor</button>
+      </div>
+      <div class="subpanel subpanel--danger">
+        <h4>Hasło i usunięcie księgi</h4>
+        <p>Zmień hasło na nowe (co najmniej 12 znaków), jeśli chcesz. Usunięcie księgi jest nieodwracalne.</p>
+        <div class="actions"><input id="new-password" type="password" minlength="12" placeholder="Nowe hasło" autocomplete="new-password"><button type="button" id="change-password" class="button">Zmień hasło</button></div>
+        <button type="button" id="delete-owner" class="button button--danger">Usuń moją księgę</button>
+      </div>
+    </div>
+  </section>
+  <section id="admin" class="panel" hidden aria-label="Panel administratora">
+    <div class="section-title"><span>♜</span><div><h3>Zarządzanie całą biblioteką</h3><p>Hasło administratora zapewnia dostęp do ksiąg bez znajomości haseł ich właścicieli.</p></div></div>
+    <form id="admin-form" class="admin-login">
+      <label>Hasło administratora<input id="admin-password" type="password" required autocomplete="current-password" placeholder="Tajne hasło administratora"></label>
+      <button type="submit" class="button button--gold">Pobierz listę ksiąg</button>
+    </form>
+    <div id="admin-list" class="admin-list" aria-live="polite"></div>
+    <p class="note">Administrator może usunąć księgę bez hasła autora, a także czasowo ukryć ją z biblioteki. Usunięcia nie da się cofnąć.</p>
+  </section>
+  <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+</main>
+<footer>✥ &nbsp; Skryptorium — kroniki graczy · Wszystkie operacje administracyjne wymagają weryfikacji na serwerze.</footer>
+</body></html>
