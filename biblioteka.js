@@ -189,10 +189,11 @@
       cover:COVERS.includes(raw.cover)?raw.cover:item.cover,
       spine:SPINES.includes(raw.spine)?raw.spine:item.spine,
       frame:FRAMES.includes(raw.frame)?raw.frame:item.frame,
-      photos:Array.isArray(raw.photos)?raw.photos.slice(0,12).map(p=>({
-        data:safeImage(p?.data),
-        caption:cleaned(p?.caption,160)
-      })).filter(p=>p.data):[]
+      photos:Array.isArray(raw.photos)?raw.photos.slice(0,12).map(p=>{
+        const photo=window.KSIEGI_LAYOUT.normalizePhoto(p);
+        if(photo)photo.data=safeImage(p?.data);
+        return photo;
+      }).filter(p=>p?.data):[]
     };
   }
   function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
@@ -283,13 +284,30 @@
     return result;
   }
   function compilePages(book){
-    const out=[{kind:"title",title:book.character,subtitle:book.subtitle,year:book.year,author:book.author,crest:book.crest}];
-    out.push(...paginateText(book.summary||"Dzieje zapisane w księdze.", "Przedmowa"));
-    out.push(...paginateText(book.story||"Kolejne karty tej kroniki czekają na zapisanie.", "Kronika"));
-    book.photos.forEach((photo,index)=>out.push({kind:"image",title:"Rycina "+(index+1),data:photo.data,caption:photo.caption}));
-    out.push({kind:"end",title:"Koniec zapisanych dziejów"});
-    if(out.length%2)out.push({kind:"blank"});
-    return out;
+    return window.KSIEGI_LAYOUT.compile(book);
+  }
+  function illustrationMarkup(photo){
+    if(!photo||!safeImage(photo.data))return "";
+    const position=window.KSIEGI_LAYOUT.validPosition(photo.position);
+    const size=window.KSIEGI_LAYOUT.validSize(photo.size);
+    return `<figure class="illustration-figure" data-position="${position}" data-size="${size}">
+      <img src="${escapeHTML(photo.data)}" alt="${escapeHTML(photo.caption||"Iluminacja z kroniki")}" loading="lazy">
+      ${photo.caption?`<figcaption>${escapeHTML(photo.caption)}</figcaption>`:""}
+      </figure>`;
+  }
+  function paragraphsWithIllustration(paragraphs,illustration){
+    if(!illustration)return `<div class="page-body" lang="pl">${paragraphs.map(p=>`<p>${escapeHTML(p)}</p>`).join("")}</div>`;
+    const blocks=paragraphs.slice();
+    if(blocks.length===1){
+      const words=blocks[0].split(/\\s+/);
+      if(words.length>5){const n=Math.floor(words.length/2);blocks.splice(0,1,words.slice(0,n).join(" "),words.slice(n).join(" "))}
+    }
+    const pieces=blocks.map(p=>`<div class="page-body" lang="pl"><p>${escapeHTML(p)}</p></div>`);
+    const image=illustrationMarkup(illustration);
+    if(illustration.position==="top")pieces.unshift(image);
+    else if(illustration.position==="bottom")pieces.push(image);
+    else pieces.splice(Math.ceil(pieces.length/2),0,image);
+    return `<div class="illustrated-body">${pieces.join("")}</div>`;
   }
   function drawPage(el,page,pageNo,book){
     el.dataset.paper=book.paper;
@@ -303,7 +321,7 @@
       <p class="page-subtitle">${escapeHTML(page.author?"Spisał: "+page.author:"")}</p>`;
     }else if(page.kind==="text"){
       body=`${top}<h3 class="page-title">${escapeHTML(page.title||"Dzieje")}</h3><div class="page-rule"></div>
-      <div class="page-body" lang="pl">${page.paragraphs.map(p=>`<p>${escapeHTML(p)}</p>`).join("")}</div>`;
+      ${paragraphsWithIllustration(page.paragraphs,page.illustration)}`;
     }else if(page.kind==="image"){
       body=`${top}<h3 class="page-title">${escapeHTML(page.title)}</h3>
       <img class="page-image" src="${page.data}" alt="${escapeHTML(page.caption||"Ilustracja kroniki")}">
@@ -313,6 +331,7 @@
     }else{
       body=`${top}<div class="page-crest-fallback">✥</div><p class="page-placeholder">Karta przeznaczona na dalsze dzieje.</p>`;
     }
+    if(page.illustration&&page.kind!=="text")body+=illustrationMarkup(page.illustration);
     el.innerHTML=`<div class="page-content">${body}<div class="page-index">✥ &nbsp; ${pageNo+1} &nbsp; ✥</div></div>`;
   }
   function paint(){
