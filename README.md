@@ -67,9 +67,24 @@ Stare, ręcznie dodane książki (np. `vojtiech-havel`) mają publiczne identyfi
 
 > Uwaga: to repozytorium jest **publiczne** i Git przechowuje historię commitów. Usunięcie książki z aktualnej wersji nie wymazuje dawnych commitów. Nie publikuj prywatnych danych osobowych, sekretów ani materiałów, które mają zostać trwale usunięte. Ukrycie w bibliotece **nie oznacza prywatności**: plik nadal pozostaje publicznie dostępny po bezpośrednim adresie i w historii Git.
 
+## Nowa kolekcja opraw i iluminacji
+
+W zakładce **02 Wygląd** udostępniono cztery niezależne wybory:
+
+- **14 kart:** klasyczny, królewski, bitewny, zakonny, nocny, welin szlachecki, marmurkowy, uczonego, zielnik opactwa, popioły, błękitny, rubinowy, katedralny i zimowy.
+- **7 obramowań:** proste, filigranowe, gotyckie, heraldyczne, roślinne, królewskie i kronikarskie.
+- **12 kolorów okładek:** bordo, leśna zieleń, granat, brąz, karmazyn, kość słoniowa, obsydian, purpura, morski, miedź, ochra i łupek.
+- **10 grzbietów:** iluminowany, żelazny, zakonny, kupiecki, koronny, krzyżowy, archiwisty, alchemika, wędrownego oraz astralny.
+
+Wszystkie cztery ustawienia zapisują się w eksporcie JSON, w plikach publicznych na GitHubie oraz są dostępne podczas późniejszej edycji księgi. Dawne kroniki bez pola `frame` używają domyślnej ramki `plain`.
+
+Nowe pliki stylów: `manuscript-themes.css` (pergamin i ornamenty) oraz rozbudowany `spine.css` (oprawy). Oba są uwzględnione w budowaniu Cloudflare Pages.
+
+**Uwaga:** zmiany wyglądu działają po wdrożeniu frontendu. Aby nowe wartości były akceptowane również podczas zapisu online, trzeba ręcznie zaktualizować w Cloudflare kod Workera na najnowszy `backend/worker.js`, jeśli Worker nie jest wdrażany automatycznie z repozytorium.
+
 ## Funkcje
 
-**Kreator:** rozdziały, historia postaci, własny herb, do 12 ilustracji, 5 pergaminów, 4 kolory oprawy, 4 grzbiety z podglądem, eksport/import pliku `*.ksiega.json`.
+**Kreator:** rozdziały, historia postaci, własny herb, do 12 ilustracji, **14 pergaminów, 7 niezależnych ornamentów ramek, 12 kolorów okładek i 10 wariantów grzbietu** z podglądem na żywo, eksport/import pliku `*.ksiega.json`.
 
 **Biblioteka:** półki z grzbietami i podtytułami, wyszukiwarka, animacja wyciągania książki, czytnik z przewracaniem stron. Pierwsza przykładowa księga Vojtiecha Havela jest w publicznych plikach repozytorium.
 
@@ -165,7 +180,8 @@ Usuwanie kasuje plik z aktualnej gałęzi i usuwa wpis katalogu oraz dane logowa
 ```
 index.html                  kreator
 app.js, styles.css          logika i wygląd kreatora
-spine.css                   wspólne wzory grzbietów
+spine.css                   12 kolorów okładek i 10 wzorów grzbietów
+manuscript-themes.css       14 rodzajów pergaminu i 7 ramek kart
 biblioteka.html             publiczna biblioteka
 biblioteka.js/.css          regały, katalog i czytnik
 zarzadzanie.html            panel właściciela i admina
