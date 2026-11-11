@@ -236,11 +236,25 @@ async function handle(request,env){
    const salt=toHex(crypto.getRandomValues(new Uint8Array(16)));
    const hash=await hashPassword(password,salt);
    const now=timestamp();
-   const content=JSON.stringify({format:"ksiegi-graczy/book",version:1,book});
-   await env.DB.prepare("INSERT INTO books(id,title,subtitle,year,cover,paper,spine,created_at,updated_at,published,salt,hash,ai_uses,ai_day,content_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-     .bind(id,book.character,book.subtitle,book.year,book.cover,book.paper,book.spine,now,now,1,salt,hash,0,today(),content).run();
+   const publicFile={format:"ksiegi-graczy/book",version:1,savedAt:now,book};
+   await githubWrite(env,bookPath(id),publicFile);
+   try{
+     // D1: wyłącznie metadane i hash hasła. content_json jest pustym polem zgodności ze starszym schematem.
+     await env.DB.prepare("INSERT INTO books(id,title,subtitle,year,cover,paper,spine,created_at,updated_at,published,salt,hash,ai_uses,ai_day,content_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+       .bind(id,book.character,book.subtitle,book.year,book.cover,book.paper,book.spine,now,now,1,salt,hash,0,today(),"").run();
+   }catch(error){
+     try{await githubDelete(env,bookPath(id))}catch(rollback){console.error("Nie udało się wycofać pliku GitHub:",rollback.message)}
+     throw error;
+   }
+   try{
+     await updateCatalog(env,id,publicFromBook(id,book));
+   }catch(error){
+     try{await env.DB.prepare("DELETE FROM books WHERE id=?").bind(id).run()}catch(rollback){console.error("Nie udało się wycofać wpisu D1:",rollback.message)}
+     try{await githubDelete(env,bookPath(id))}catch(rollback){console.error("Nie udało się wycofać pliku GitHub:",rollback.message)}
+     throw error;
+   }
    await throttle(env,quotaKey,3,86400,true);
-   return result(request,env,{id,published:true,message:"Księga została opublikowana.",adminNote:"Zachowaj hasło i identyfikator księgi. Hasło nie jest odzyskiwalne."},201);
+   return result(request,env,{id,published:true,message:"Księga została publicznie opublikowana na GitHubie.",adminNote:"Zachowaj hasło i identyfikator księgi. Hasło nie jest odzyskiwalne."},201);
  }
  const single=path.match(/^\/api\/books\/([a-f\d-]{36})$/);
  if(single){
@@ -254,9 +268,12 @@ async function handle(request,env){
      const data=await bodyJSON(request);
      const old=await checkOwner(request,env,id,data.password);
      const book=validateBook(data.book);
-     const content=JSON.stringify({format:"ksiegi-graczy/book",version:1,book});
-     await env.DB.prepare("UPDATE books SET title=?,subtitle=?,year=?,paper=?,cover=?,spine=?,updated_at=?,content_json=? WHERE id=?")
-       .bind(book.character,book.subtitle,book.year,book.paper,book.cover,book.spine,timestamp(),content,id).run();
+     const oldFile=await githubFetch(env,bookPath(id),true);
+     if(!oldFile)throw new ApiError(404,"Nie znaleziono pliku tej księgi w publicznym repozytorium.");
+     await githubWrite(env,bookPath(id),{format:"ksiegi-graczy/book",version:1,savedAt:timestamp(),book},oldFile.sha);
+     await env.DB.prepare("UPDATE books SET title=?,subtitle=?,year=?,paper=?,cover=?,spine=?,updated_at=?,content_json='' WHERE id=?")
+       .bind(book.character,book.subtitle,book.year,book.paper,book.cover,book.spine,timestamp(),id).run();
+     if(old.published)await updateCatalog(env,id,publicFromBook(id,book));
      return result(request,env,{ok:true,id,published:!!old.published});
    }
    if(request.method==="DELETE"){
@@ -317,9 +334,16 @@ async function handle(request,env){
    const data=await bodyJSON(request);await checkAdmin(request,env,data.adminPassword);
    const id=clean(data.id,64);
    if(!ID_RE.test(id)||typeof data.published!=="boolean")throw new ApiError(400,"Niepoprawne dane.");
-   const updated=await env.DB.prepare("UPDATE books SET published=?,updated_at=? WHERE id=?")
+   const row=await getRow(env,id);
+   if(!row)throw new ApiError(404,"Księga nie istnieje.");
+   if(data.published){
+     const publicFile=await objectBook(env,id);
+     await updateCatalog(env,id,publicFromBook(id,publicFile.book));
+   }else{
+     await updateCatalog(env,id,null);
+   }
+   await env.DB.prepare("UPDATE books SET published=?,updated_at=? WHERE id=?")
      .bind(data.published?1:0,timestamp(),id).run();
-   if(!updated.meta?.changes)throw new ApiError(404,"Księga nie istnieje.");
    return result(request,env,{ok:true,id,published:data.published});
  }
  throw new ApiError(404,"Nie znaleziono adresu API.");
