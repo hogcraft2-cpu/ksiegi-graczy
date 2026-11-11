@@ -835,13 +835,27 @@
       }catch(e){notify(e.message)}
     });
     $("remove-crest").addEventListener("click",()=>{state.crest=null;renderCrest();updatePreview();saveDraft()});
+    $("scene-search").addEventListener("input",renderSceneGallery);
+    $("scene-category").addEventListener("change",renderSceneGallery);
+    $("scene-insert").addEventListener("click",insertScene);
+    $("scene-use-current").addEventListener("click",()=>{
+      const selected=open?currentPage+1:2;
+      $("scene-page").value=Math.max(1,selected);
+      notify("Wybrano kartę "+$("scene-page").value+". Możesz wybrać inną.");
+    });
     $("photos-upload").addEventListener("change",async event=>{
       const files=Array.from(event.target.files||[]);event.target.value="";
       for(const file of files){
         if(state.photos.length>=MAX_IMAGES){notify("Możesz dodać najwyżej 12 ilustracji.");break}
         try{
           const data=await resizeImage(file,1050,.74);
-          state.photos.push({id:"ilustracja-"+Date.now()+"-"+state.photos.length,data,caption:file.name.replace(/\.[^.]+$/,"").slice(0,160)});
+          let page=open?currentPage+1:2;
+          while(page<=500&&imagePageOccupied(page))page++;
+          state.photos.push({
+            id:"ilustracja-"+Date.now()+"-"+state.photos.length,
+            data,caption:file.name.replace(/\\.[^.]+$/,"").slice(0,160),
+            page:page<=500?page:null,position:"middle",size:"medium"
+          });
         }catch(e){notify(file.name+": "+e.message)}
       }
       photoMarkup();updatePreview();saveDraft();
@@ -879,5 +893,5 @@
       resizeTimer=setTimeout(()=>{if(!busy)renderSpread()},180);
     });
   }
-  loadDraft();wire();fillFields();showTab("story");updateControls();checkOnline();
+  loadDraft();wire();fillFields();loadSceneGallery();showTab("story");updateControls();checkOnline();
 })();
