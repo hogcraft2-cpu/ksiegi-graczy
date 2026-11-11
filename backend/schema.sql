@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS books (
   published INTEGER NOT NULL DEFAULT 1,
   salt TEXT NOT NULL,
   hash TEXT NOT NULL,
+  -- Kompletne dane księgi i obrazy w data URL; maksymalnie 1,5 MB.
+  content_json TEXT NOT NULL,
   ai_uses INTEGER NOT NULL DEFAULT 0,
   ai_day TEXT NOT NULL DEFAULT ''
 );
