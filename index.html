@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="spine.css">
   <link rel="stylesheet" href="styles.css">
+  <script src="api-config.js"></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -21,6 +22,7 @@
     <div class="topbar__rule" aria-hidden="true"></div>
     <span class="topbar__subtitle">Kreator kronik postaci</span>
     <a class="topbar__library" href="./biblioteka.html">❧ &nbsp; Publiczna biblioteka</a>
+    <a class="topbar__library" href="./zarzadzanie.html">⚜ &nbsp; Zarządzaj księgą</a>
     <span class="local-indicator">✦ &nbsp; Twoja opowieść pozostaje w przeglądarce</span>
   </header>
   <div class="layout">
@@ -121,6 +123,23 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
               <p>Wróć do edycji księgi zapisanej wcześniej na dysku.</p>
               <label for="load-json" class="button">Wczytaj projekt .json</label>
               <input type="file" id="load-json" accept=".json,application/json" hidden>
+            </div>
+          </div>
+          <div class="publish-online">
+            <div class="section-heading">✥ &nbsp; Publikacja w bibliotece</div>
+            <h2>Opublikuj księgę z hasłem</h2>
+            <p class="description">Każda opublikowana księga dostaje własny identyfikator i hasło właściciela. Dzięki nim później zmienisz treść lub ją usuniesz w osobnym panelu. Hasło nie trafi do pliku JSON ani do publicznej biblioteki.</p>
+            <label for="publish-password">Hasło właściciela (minimum 12 znaków)</label>
+            <input id="publish-password" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Ustal silne, unikatowe hasło">
+            <label for="publish-confirm">Powtórz hasło</label>
+            <input id="publish-confirm" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Powtórz hasło">
+            <button id="publish-online" type="button" class="button button--gold">Opublikuj księgę online</button>
+            <p class="hint" id="online-status" role="status">Sprawdzanie połączenia z serwerem książek…</p>
+            <div id="publish-result" class="publish-result" hidden>
+              <strong>Twoja księga jest dostępna w bibliotece.</strong>
+              <p>Identyfikator księgi (zachowaj go razem z hasłem):</p>
+              <code id="published-id"></code>
+              <p><a href="./zarzadzanie.html">Przejdź do panelu edycji i generatora ilustracji →</a></p>
             </div>
           </div>
           <div class="future-note"><strong>Publiczna biblioteka już dostępna</strong><p>Wybierz księgę z regału i czytaj bez zmiany adresu strony. Opublikowanie nowej księgi wymaga obecnie dodania pliku JSON i wpisu w katalogu przez opiekuna repozytorium.</p><p><a href="./biblioteka.html">Przejdź do biblioteki ksiąg →</a></p></div>
