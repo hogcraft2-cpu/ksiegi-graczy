@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Oryginalne iluminacje w stylu około roku 1400, galeria Skryptorium.",
+  "description": "Biblioteka autorskich iluminacji w stylistyce czeskich rękopisów około 1400 roku.",
   "scenes": [
     {
       "id": "scene-01",
@@ -114,6 +114,120 @@
         "zbrojownia"
       ],
       "src": "assets/scenes/scene-10.webp"
+    },
+    {
+      "id": "scene-11",
+      "title": "Łucznik podczas treningu",
+      "category": "Rycerstwo",
+      "tags": [
+        "łuk",
+        "łucznik",
+        "trening",
+        "tarcza"
+      ],
+      "src": "assets/scenes/scene-11.webp"
+    },
+    {
+      "id": "scene-12",
+      "title": "Spotkanie w karczmie",
+      "category": "Życie codzienne",
+      "tags": [
+        "karczma",
+        "gospoda",
+        "podróżni"
+      ],
+      "src": "assets/scenes/scene-12.webp"
+    },
+    {
+      "id": "scene-13",
+      "title": "Złotnik przy pracy",
+      "category": "Rzemiosło",
+      "tags": [
+        "złotnik",
+        "biżuteria",
+        "pracownia"
+      ],
+      "src": "assets/scenes/scene-13.webp"
+    },
+    {
+      "id": "scene-14",
+      "title": "Płatnerz wykuwa zbroję",
+      "category": "Rzemiosło",
+      "tags": [
+        "płatnerz",
+        "zbroja",
+        "kuźnia"
+      ],
+      "src": "assets/scenes/scene-14.webp"
+    },
+    {
+      "id": "scene-15",
+      "title": "Kronikarz w skryptorium",
+      "category": "Rzemiosło",
+      "tags": [
+        "pisarz",
+        "księga",
+        "skryptorium"
+      ],
+      "src": "assets/scenes/scene-15.webp"
+    },
+    {
+      "id": "scene-16",
+      "title": "Zielarka przygotowuje leki",
+      "category": "Życie codzienne",
+      "tags": [
+        "zielarka",
+        "zioła",
+        "leczenie"
+      ],
+      "src": "assets/scenes/scene-16.webp"
+    },
+    {
+      "id": "scene-17",
+      "title": "Myśliwy w leśnej ostoi",
+      "category": "Podróże",
+      "tags": [
+        "łowca",
+        "jeleń",
+        "pies",
+        "las"
+      ],
+      "src": "assets/scenes/scene-17.webp"
+    },
+    {
+      "id": "scene-18",
+      "title": "Rolnik orze pole",
+      "category": "Życie codzienne",
+      "tags": [
+        "rolnik",
+        "oracz",
+        "koń",
+        "pole"
+      ],
+      "src": "assets/scenes/scene-18.webp"
+    },
+    {
+      "id": "scene-19",
+      "title": "Kupiec na miejskim targu",
+      "category": "Życie codzienne",
+      "tags": [
+        "kupiec",
+        "handel",
+        "monety",
+        "targ"
+      ],
+      "src": "assets/scenes/scene-19.webp"
+    },
+    {
+      "id": "scene-20",
+      "title": "Giermek opiekuje się koniem",
+      "category": "Rycerstwo",
+      "tags": [
+        "giermek",
+        "koń",
+        "stajnia"
+      ],
+      "src": "assets/scenes/scene-20.webp"
     }
   ]
 }
