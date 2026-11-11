@@ -365,18 +365,117 @@
     $("crest-mini").innerHTML=icon;
     $("cover-crest").innerHTML=icon;
   }
+  let sceneCatalog=[],selectedScene=null;
+  const LOCATIONS=[["top","Góra"],["middle","Środek"],["bottom","Dół"],["full","Osobna karta"]];
+  const DIMENSIONS=[["small","Mały"],["medium","Średni"],["large","Duży"]];
+  function imagePageOccupied(page,except=-1){
+    return state.photos.some((p,i)=>i!==except&&Number(p.page)===page);
+  }
+  function photoSelectionOptions(options,current){
+    return options.map(([id,label])=>'<option value="'+id+'"'+(id===current?' selected':'')+'>'+escapeHtml(label)+'</option>').join("");
+  }
+  async function loadSceneGallery(){
+    try{
+      const response=await fetch("./assets/scenes/catalog.json",{cache:"no-store"});
+      if(!response.ok)throw Error("Nie udało się wczytać galerii.");
+      const parsed=await response.json();
+      if(parsed.version!==1||!Array.isArray(parsed.scenes))throw Error("Nieprawidłowa galeria.");
+      sceneCatalog=parsed.scenes.filter(item=>item&&SCENE_IMAGE.test(item.src)&&typeof item.title==="string")
+        .map(item=>({id:item.id,title:item.title,category:String(item.category||"Inne"),src:item.src,
+          tags:Array.isArray(item.tags)?item.tags.join(" "):""}));
+      const categories=[...new Set(sceneCatalog.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,"pl"));
+      const picker=$("scene-category");
+      categories.forEach(category=>{
+        const opt=document.createElement("option");
+        opt.value=category;opt.textContent=category;picker.append(opt);
+      });
+      renderSceneGallery();
+    }catch(error){
+      const target=$("scene-gallery");target.replaceChildren();
+      const notice=document.createElement("p");
+      notice.className="hint";notice.textContent="Galeria jest chwilowo niedostępna. Możesz nadal dodać własne ilustracje.";
+      target.append(notice);
+      console.warn("Galeria ilustracji:",error);
+    }
+  }
+  function renderSceneGallery(){
+    const target=$("scene-gallery");target.replaceChildren();
+    const query=$("scene-search").value.trim().toLocaleLowerCase("pl");
+    const category=$("scene-category").value;
+    const filtered=sceneCatalog.filter(item=>(!category||item.category===category)
+      &&(!query||(item.title+" "+item.category+" "+item.tags).toLocaleLowerCase("pl").includes(query)));
+    if(!filtered.length){
+      const p=document.createElement("p");p.className="hint";
+      p.textContent="Nie znaleziono ilustracji pasującej do wyszukiwania.";target.append(p);return;
+    }
+    filtered.forEach(item=>{
+      const button=document.createElement("button");
+      button.type="button";button.className="scene-card"+(selectedScene?.id===item.id?" is-selected":"");
+      button.setAttribute("aria-pressed",String(selectedScene?.id===item.id));
+      const image=document.createElement("img");image.src="./"+item.src;
+      image.alt=item.title;image.loading="lazy";
+      const title=document.createElement("span");title.className="scene-card__name";title.textContent=item.title;
+      const group=document.createElement("span");group.className="scene-card__group";group.textContent=item.category;
+      button.append(image,title,group);
+      if(selectedScene?.id===item.id){
+        const check=document.createElement("span");check.className="scene-card__check";check.textContent="✓";button.append(check);
+      }
+      button.addEventListener("click",()=>{
+        selectedScene=item;$("scene-selected").textContent="Wybrano: "+item.title;
+        if(!$("scene-caption").value.trim())$("scene-caption").value=item.title;
+        renderSceneGallery();
+      });
+      target.append(button);
+    });
+  }
+  function revealIllustrationPage(number){
+    function focusPage(){
+      const count=buildPages().length;
+      currentPage=Math.max(0,Math.min(count-1,number-1));
+      if(!smallScreen())currentPage-=currentPage%2;
+      renderSpread();
+    }
+    if(!open){openBook();setTimeout(focusPage,430)}
+    else focusPage();
+  }
+  function insertScene(){
+    if(!selectedScene){notify("Najpierw wybierz ilustrację z galerii.");return}
+    if(state.photos.length>=MAX_IMAGES){notify("W jednej księdze można umieścić najwyżej 12 ilustracji.");return}
+    const page=Number($("scene-page").value);
+    if(!Number.isInteger(page)||page<1||page>500){notify("Wpisz numer karty od 1 do 500.");return}
+    if(imagePageOccupied(page)){notify("Na tej karcie jest już ilustracja. Wybierz inny numer.");return}
+    const photo={
+      id:"scena-"+Date.now()+"-"+state.photos.length,
+      data:selectedScene.src,
+      caption:$("scene-caption").value.trim().slice(0,160),
+      page,
+      position:window.KSIEGI_LAYOUT.validPosition($("scene-position").value),
+      size:window.KSIEGI_LAYOUT.validSize($("scene-size").value)
+    };
+    state.photos.push(photo);
+    photoMarkup();updatePreview();saveDraft();
+    revealIllustrationPage(page);
+    notify("Wstawiono ilustrację na kartę "+page+". Możesz zmieniać jej położenie poniżej.");
+  }
   function photoMarkup(){
     const list=$("photo-list");
-    $("photo-count").textContent=`${state.photos.length} / ${MAX_IMAGES} obrazów`;
-    if(!state.photos.length){list.innerHTML='<p class="photo-empty">Nie dodano jeszcze ilustracji.</p>';return}
-    list.innerHTML=state.photos.map((photo,i)=>`
-      <div class="photo-item">
-        <img src="${photo.data}" alt="Podgląd ilustracji nr ${i+1}">
-        <div><label for="caption-${i}">Podpis pod ilustracją ${i+1}</label>
-          <input id="caption-${i}" type="text" maxlength="160" data-caption="${i}" placeholder="Np. Zamek w Suchodole" value="${escapeHtml(photo.caption)}">
-          <small>Obraz ${i+1} • karta ilustracyjna</small></div>
-        <button type="button" class="photo-item__remove" data-remove="${i}" aria-label="Usuń obraz ${i+1}">×</button>
-      </div>`).join("");
+    $("photo-count").textContent=state.photos.length+" / "+MAX_IMAGES+" obrazów";
+    if(!state.photos.length){
+      list.innerHTML='<p class="photo-empty">Nie dodano jeszcze ilustracji.</p>';return;
+    }
+    list.innerHTML=state.photos.map((photo,i)=>
+      '<div class="photo-item">'+
+      '<img src="'+escapeHtml(photo.data)+'" alt="Podgląd ilustracji '+(i+1)+'">'+
+      '<div class="photo-item__settings">'+
+      '<label for="caption-'+i+'">Podpis pod ilustracją '+(i+1)+'</label>'+
+      '<input id="caption-'+i+'" type="text" maxlength="160" data-caption="'+i+'" value="'+escapeHtml(photo.caption)+'">'+
+      '<div class="photo-location">'+
+      '<label>Numer karty<input type="number" min="1" max="500" data-photo-page="'+i+'" value="'+(photo.page||'')+'" placeholder="Na końcu"></label>'+
+      '<label>Wielkość<select data-photo-size="'+i+'">'+photoSelectionOptions(DIMENSIONS,photo.size||"medium")+'</select></label>'+
+      '<label>Umiejscowienie<select data-photo-position="'+i+'">'+photoSelectionOptions(LOCATIONS,photo.position||(photo.page?"middle":"full"))+'</select></label>'+
+      '</div><button type="button" class="photo-item__show" data-photo-show="'+i+'">Pokaż tę kartę</button></div>'+
+      '<button type="button" class="photo-item__remove" data-remove="'+i+'" aria-label="Usuń ilustrację '+(i+1)+'">×</button>'+
+      '</div>').join("");
     list.querySelectorAll("[data-remove]").forEach(btn=>btn.addEventListener("click",()=>{
       state.photos.splice(Number(btn.dataset.remove),1);
       photoMarkup();updatePreview();saveDraft();
@@ -384,6 +483,29 @@
     list.querySelectorAll("[data-caption]").forEach(input=>input.addEventListener("input",()=>{
       state.photos[Number(input.dataset.caption)].caption=input.value;
       schedulePreview();saveDraft();
+    }));
+    list.querySelectorAll("[data-photo-page]").forEach(input=>input.addEventListener("change",()=>{
+      const index=Number(input.dataset.photoPage),photo=state.photos[index];
+      if(!input.value.trim()){photo.page=null;input.value="";updatePreview();saveDraft();return}
+      const number=Number(input.value);
+      if(!Number.isInteger(number)||number<1||number>500||imagePageOccupied(number,index)){
+        notify("Wybierz wolną kartę z numerem od 1 do 500.");
+        input.value=photo.page||"";return;
+      }
+      photo.page=number;updatePreview();saveDraft();
+    }));
+    list.querySelectorAll("[data-photo-position]").forEach(el=>el.addEventListener("change",()=>{
+      state.photos[Number(el.dataset.photoPosition)].position=window.KSIEGI_LAYOUT.validPosition(el.value);
+      updatePreview();saveDraft();
+    }));
+    list.querySelectorAll("[data-photo-size]").forEach(el=>el.addEventListener("change",()=>{
+      state.photos[Number(el.dataset.photoSize)].size=window.KSIEGI_LAYOUT.validSize(el.value);
+      updatePreview();saveDraft();
+    }));
+    list.querySelectorAll("[data-photo-show]").forEach(button=>button.addEventListener("click",()=>{
+      const photo=state.photos[Number(button.dataset.photoShow)];
+      const found=buildPages().findIndex(page=>page.illustration?.id===photo.id||page.kind==="image"&&page.data===photo.data);
+      revealIllustrationPage(photo.page||Math.max(1,found+1));
     }));
   }
   function showTab(name){
