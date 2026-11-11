@@ -426,7 +426,8 @@
     if(publishing)return;
     const password=$("publish-password").value,confirmed=$("publish-confirm").value;
     if(!state.character.trim()||!state.story.trim()){notify("Przed publikacją wpisz imię postaci i jej historię.");return}
-    if(password.length<12||password.length>128){notify("Hasło musi zawierać od 12 do 128 znaków.");return}
+    if(!password){notify("Wpisz hasło właściciela.");return}
+    if(new TextEncoder().encode(password).byteLength>4096){notify("Hasło jest za długie do bezpiecznego przetwarzania na serwerze (4096 bajtów).");return}
     if(password!==confirmed){notify("Podane hasła nie są takie same.");return}
     const bytes=estimateOnlineSize(bookForOnline());
     if(bytes>ONLINE_BOOK_LIMIT){notify("Księga ma "+Math.ceil(bytes/1024)+" KB. Limit publikacji w repozytorium GitHub to 850 KB. Usuń część zdjęć lub zmniejsz je.");return}
@@ -443,6 +444,7 @@
       if(!response.ok)throw Error(result.error||"Publikacja nie powiodła się.");
       lastPublishedId=result.id;
       $("published-id").textContent=result.id;
+      $("published-manage-link").href="./zarzadzanie.html?book="+encodeURIComponent(result.id);
       $("publish-result").hidden=false;
       $("publish-password").value="";
       $("publish-confirm").value="";
@@ -498,6 +500,12 @@
     $("reset-preview").addEventListener("click",closeBook);
     $("save-json").addEventListener("click",exportBook);
     $("publish-online").addEventListener("click",publishOnline);
+    $("copy-book-id").addEventListener("click",async()=>{
+      const id=$("published-id").textContent.trim();
+      if(!id)return;
+      try{await navigator.clipboard.writeText(id);notify("Identyfikator księgi skopiowany.");}
+      catch(_){const field=document.createElement("textarea");field.value=id;field.style.position="fixed";field.style.left="-9999px";document.body.append(field);field.select();const copied=document.execCommand("copy");field.remove();notify(copied?"Identyfikator księgi skopiowany.":"Zaznacz identyfikator i skopiuj go ręcznie.");}
+    });
     $("load-json").addEventListener("change",event=>{
       const file=event.target.files?.[0];event.target.value="";
       importBook(file);
