@@ -57,18 +57,44 @@
     button.className="book-spine";
     button.type="button";
     button.dataset.cover=item.cover;
-    button.style.setProperty("--book-height",String(188+(index*17)%44)+"px");
-    button.style.setProperty("--book-width",String(78+(index*11)%16)+"px");
-    button.style.setProperty("--tilt",((index%5)-2)*.65+"deg");
+    // Cztery rodzaje skórzanych opraw: każda otrzymuje inny detal rzemieślniczy.
+    const finishes=["illuminated","ironbound","monastic","merchant"];
+    button.dataset.finish=finishes[index%finishes.length];
+    button.style.setProperty("--book-height",String(235+(index*17)%35)+"px");
+    button.style.setProperty("--book-width",String(94+(index*7)%12)+"px");
+    button.style.setProperty("--tilt",((index%7)-3)*.46+"deg");
     button.title=item.title+" — "+item.subtitle;
     button.setAttribute("aria-label","Otwórz księgę "+item.title+". "+item.subtitle);
-    const seal=document.createElement("span");seal.className="book-spine__seal";seal.textContent="✥";
-    const text=document.createElement("span");text.className="book-spine__text";
+
+    const make=(className,text)=>{
+      const node=document.createElement("span");
+      node.className=className;
+      if(text!==undefined)node.textContent=text;
+      node.setAttribute("aria-hidden","true");
+      return node;
+    };
+    const edge=make("book-spine__edge");
+    const grain=make("book-spine__grain");
+    const frame=make("book-spine__frame");
+    const clasps=make("book-spine__clasps");
+    clasps.append(make("book-spine__clasp"),make("book-spine__clasp"));
+    const ridges=make("book-spine__ridges");
+    ridges.append(make("book-spine__ridge"),make("book-spine__ridge"),
+      make("book-spine__ridge"),make("book-spine__ridge"));
+    const top=make("book-spine__finial book-spine__finial--top");
+    const bottom=make("book-spine__finial book-spine__finial--bottom");
+    const cartouche=make("book-spine__cartouche");
+    const rosette=make("book-spine__rosette","✥");
+    const monogram=make("book-spine__monogram",(item.title.trim().charAt(0)||"✦").toUpperCase());
+    const label=make("book-spine__label");
     const title=document.createElement("span");title.className="book-spine__title";title.textContent=item.title;
+    const divider=make("book-spine__divider","❦");
     const subtitle=document.createElement("span");subtitle.className="book-spine__subtitle";subtitle.textContent=item.subtitle;
-    text.append(title,subtitle);
-    const year=document.createElement("span");year.className="book-spine__year";year.textContent=item.year||"❧";
-    button.append(seal,text,year);
+    title.setAttribute("aria-hidden","true");subtitle.setAttribute("aria-hidden","true");
+    label.append(title,divider,subtitle);
+    const year=make("book-spine__year",item.year||"✣");
+    cartouche.append(rosette,monogram,label,year);
+    button.append(edge,grain,frame,ridges,clasps,top,bottom,cartouche);
     button.addEventListener("click",()=>pullBook(item,button));
     return button;
   }
