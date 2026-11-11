@@ -1,6 +1,23 @@
+## Aktualizacja: wariant bez R2 (Cloudflare D1 Free)
+
+Od 11 listopada 2026 r. **R2 nie jest już wymagane**. Używamy Cloudflare D1 także do przechowywania treści, herbów i ilustracji w polu `content_json`.
+
+- Rozmiar jednej opublikowanej księgi po kompresji obrazów: maksymalnie **1 500 000 bajtów** (około 1,5 MB).
+- Maksymalny rozmiar pojedynczego obrazu przesyłanego do serwera: 400 000 znaków kodowania data URL.
+- Darmowy plan D1 ma ograniczenia, w tym 500 MB na bazę i 2 MB na rekord; większą kolekcję obrazów trzeba później przechowywać inaczej.
+- **Nie twórz zasobu R2 ani bindingu `BOOKS`**.
+- W Workerze dodaj tylko binding `DB` typu D1. Binding `AI` jest opcjonalny — bez niego generator obrazów wyświetli informację o braku konfiguracji.
+- Pozostaw własne tajne wartości `ADMIN_SECRET` i `RATE_SALT` jako Cloudflare Secrets.
+- Pełna instrukcja w [backend/INSTRUKCJA-BEZ-R2.md](backend/INSTRUKCJA-BEZ-R2.md).
+- Jeśli zainicjowałeś tabelę przed zmianą, uruchom jednorazowo `backend/migrate-d1-only.sql` (nie uruchamiaj migracji na nowo utworzonej bazie).
+
+Uwaga: księgi i obrazy przechowywane w bazie są publicznie dostępne przez endpoint czytelniczy tylko dla opublikowanych książek. Nie wpisuj prywatnych danych do historii.
+
+---
+
 # Bezpieczne zarządzanie księgami i generator iluminacji
 
-**Status:** kod API, kreatora i panelu zarządzania jest w repozytorium. Funkcje serwerowe zaczną działać dopiero po uruchomieniu Cloudflare Worker i skonfigurowaniu D1, R2 oraz AI. Publiczny GitHub Pages **nie przechowuje i nie weryfikuje haseł**.
+**Status:** kod API, kreatora i panelu zarządzania jest w repozytorium. Funkcje serwerowe zaczną działać dopiero po uruchomieniu Cloudflare Worker i skonfigurowaniu D1 oraz opcjonalnie Workers AI. Publiczny GitHub Pages **nie przechowuje i nie weryfikuje haseł**.
 
 ### Strony
 
@@ -32,7 +49,7 @@ Zarówno GitHub Pages, jak i Cloudflare Pages są tylko frontendem. Konieczne je
 6. W `wrangler.toml` ustaw `ALLOWED_ORIGINS`: adres frontendu, np. `https://hogcraft2-cpu.github.io`. Gdy używasz także innej domeny, oddzielaj adresy przecinkami.
 7. Wdróż API: `npx wrangler deploy`. Skopiuj otrzymany adres `https://ksiegi-graczy-api.TWOJE-KONTO.workers.dev`.
 8. W pliku repozytorium `api-config.js` wpisz **tylko publiczny adres Workera** w `window.KSIEGI_API_BASE`. Nie wstawiaj tam haseł ani tokenów.
-9. Odśwież kreator i otwórz panel `zarzadzanie.html`. Status powinien pokazywać aktywne połączenie z D1/R2. Wygenerowanie obrazu wymaga prawidłowej konfiguracji bindingu `AI` w Workerze.
+9. Odśwież kreator i otwórz panel `zarzadzanie.html`. Status powinien pokazywać aktywne połączenie z D1. Wygenerowanie obrazu wymaga prawidłowej konfiguracji bindingu `AI` w Workerze.
 
 **Uwaga o kolejności sekretów:** przy pierwszym wdrożeniu (zanim Worker istnieje), jeśli `wrangler secret put` nie znajduje jeszcze projektu, wykonaj najpierw `npx wrangler deploy`, następnie ustaw sekrety i wdróż ponownie.
 
@@ -41,9 +58,9 @@ Przykładowe ustawienia bindings znajdują się w `backend/wrangler.toml.example
 ### Koszty i bezpieczeństwo
 
 - Cloudflare D1 jest dostępne na darmowym planie (w granicach limitów).
-- Cloudflare R2 ma bezpłatny miesięczny limit, po jego przekroczeniu mogą wystąpić opłaty; samo włączenie usługi może wymagać danych rozliczeniowych.
+- **R2 nie jest wykorzystywane i nie trzeba go uruchamiać.** Pełne księgi, herby i ilustracje są przechowywane w D1. Limit jednej opublikowanej książki to 1,5 MB.
 - Workers AI ma ograniczoną darmową pulę. Generowanie ilustracji może zużywać tę pulę lub być płatne po przekroczeniu limitu. Nie obiecujemy nieograniczonego darmowego generowania.
-- Hasła i zasoby są wrażliwe: włącz 2FA w Cloudflare, ustaw limity, monitoruj zużycie i regularnie wykonuj kopie D1/R2.
+- Hasła i zasoby są wrażliwe: włącz 2FA w Cloudflare, ustaw limity, monitoruj zużycie i regularnie wykonuj kopie D1.
 - Obrazy AI nie gwarantują poprawności historycznej.
 - Jeżeli zapomnisz hasła księgi, użytkownik nie odzyska go automatycznie. Administrator może w razie potrzeby usunąć księgę.
 
