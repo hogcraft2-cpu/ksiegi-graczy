@@ -26,3 +26,10 @@
 @media(max-width:570px){.topbar{height:66px;padding:0 12px}.mark{height:43px;width:39px}.brand strong{font-size:20px}.brand small{font-size:8px}.local-indicator{display:none}.preview-head{flex-direction:column;align-items:start}.preview-head__actions{width:100%;justify-content:space-between}.desk{height:492px}.book-shell{width:96%;height:82%}.book-cover{height:91%;width:83%;min-width:0;padding:16px}.book-spread{width:94%}.folio{padding:21px 18px}.folio--right{display:none}.spine{left:auto;right:0;width:11px}.turn-leaf{left:0;width:100%}.folio-text{font-size:15px}.page-button{min-width:86px;padding:9px 8px;font-size:10px}.page-indicator{font-size:10px}.cover-title{font-size:21px}.preview-footer span:last-child{display:none}}
 @media(max-width:390px){.paper-options{grid-template-columns:1fr 1fr}.cover-options{gap:4px}.cover-option{font-size:11px}.editor-scroll{padding:18px 15px}.folio-text{font-size:14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Bezpośredni dostęp do publicznej biblioteki */
+.topbar__library{margin-left:auto;text-decoration:none;font:11px 'Cinzel',Georgia,serif;color:#f1d3a0;background:#533823;border:1px solid #a9824f;padding:10px 13px;white-space:nowrap;transition:.2s}
+.topbar__library:hover{background:#755030;border-color:#edc58d}
+.topbar .local-indicator{margin-left:0}
+.future-note a{color:#f1cc92;text-underline-offset:3px}
+@media(max-width:570px){.topbar__library{font-size:9px;padding:7px;margin-left:auto;max-width:132px;white-space:normal;text-align:center}}
