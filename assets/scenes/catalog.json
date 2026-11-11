@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "description": "Oryginalne iluminacje w stylu około roku 1400, galeria Skryptorium.",
+  "scenes": [
+    {
+      "id": "scene-01",
+      "title": "Rycerz w drodze",
+      "category": "Rycerstwo",
+      "tags": [
+        "rycerz",
+        "kon",
+        "zamek",
+        "podróż"
+      ],
+      "src": "assets/scenes/scene-01.webp"
+    },
+    {
+      "id": "scene-02",
+      "title": "Samotna wędrówka",
+      "category": "Dzieciństwo",
+      "tags": [
+        "chłopiec",
+        "las",
+        "podróż"
+      ],
+      "src": "assets/scenes/scene-02.webp"
+    },
+    {
+      "id": "scene-03",
+      "title": "Chłopiec w osadzie",
+      "category": "Dzieciństwo",
+      "tags": [
+        "młodzieniec",
+        "wieś",
+        "sam"
+      ],
+      "src": "assets/scenes/scene-03.webp"
+    },
+    {
+      "id": "scene-04",
+      "title": "Obóz przy ognisku",
+      "category": "Podróże",
+      "tags": [
+        "ognisko",
+        "chłopiec",
+        "namiot"
+      ],
+      "src": "assets/scenes/scene-04.webp"
+    },
+    {
+      "id": "scene-05",
+      "title": "Droga przez las",
+      "category": "Podróże",
+      "tags": [
+        "las",
+        "podróż",
+        "wędrówka"
+      ],
+      "src": "assets/scenes/scene-05.webp"
+    },
+    {
+      "id": "scene-06",
+      "title": "Kowal przy palenisku",
+      "category": "Rzemiosło",
+      "tags": [
+        "kowal",
+        "młot",
+        "broń",
+        "kuźnia"
+      ],
+      "src": "assets/scenes/scene-06.webp"
+    },
+    {
+      "id": "scene-07",
+      "title": "Młodzieniec i miecz",
+      "category": "Rycerstwo",
+      "tags": [
+        "miecz",
+        "giermek",
+        "chłopiec"
+      ],
+      "src": "assets/scenes/scene-07.webp"
+    },
+    {
+      "id": "scene-08",
+      "title": "Kucie ostrza",
+      "category": "Rzemiosło",
+      "tags": [
+        "kowal",
+        "kuźnia",
+        "miecz"
+      ],
+      "src": "assets/scenes/scene-08.webp"
+    },
+    {
+      "id": "scene-09",
+      "title": "Młodzieniec na rynku",
+      "category": "Życie codzienne",
+      "tags": [
+        "wieś",
+        "chłopiec",
+        "targ",
+        "studnia"
+      ],
+      "src": "assets/scenes/scene-09.webp"
+    },
+    {
+      "id": "scene-10",
+      "title": "Pierwszy miecz",
+      "category": "Dzieciństwo",
+      "tags": [
+        "chłopiec",
+        "miecz",
+        "zbrojownia"
+      ],
+      "src": "assets/scenes/scene-10.webp"
+    }
+  ]
+}
