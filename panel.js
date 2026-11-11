@@ -1,0 +1,264 @@
+/* Bezpieczne zarządzanie kronikami — hasła pozostają wyłącznie w pamięci tej karty.
+ * Publiczne pliki GitHub Pages nie weryfikują haseł: robi to Worker Cloudflare.
+ */
+(() => {
+ "use strict";
+ const $=id=>document.getElementById(id);
+ const API=String(window.KSIEGI_API_BASE||"").trim().replace(/\/+$/,"");
+ const configured=/^https:\/\/[\w.-]+(?::\d+)?$/.test(API) || /^http:\/\/localhost:\d+$/.test(API);
+ let ownerId="",ownerPass="",adminPass="",book=null,illustration=null;
+ const editable=["character","subtitle","year","author","summary","story","paper","cover","spine"];
+ const photoCap=12;
+ let lastError="";
+ function feedback(message,error=false){
+   $("feedback").textContent=message;
+   $("feedback").style.color=error?"#f2a88f":"#e3c28c";
+ }
+ async function api(path,options={}){
+   if(!configured)throw Error("Najpierw trzeba podłączyć serwer Cloudflare w pliku api-config.js.");
+   const response=await fetch(API+path,{
+     method:options.method||"GET",
+     headers:{"Content-Type":"application/json"},
+     body:options.body===undefined?undefined:JSON.stringify(options.body),
+     cache:"no-store"
+   });
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error(data.error||"Błąd połączenia z serwerem (HTTP "+response.status+")");
+   return data;
+ }
+ async function checkApi(){
+   const message=$("api-message");
+   if(!configured){
+     message.classList.add("is-offline");
+     message.textContent="Serwer edycji nie został jeszcze podłączony. Administrator musi wdrożyć Cloudflare Worker i ustawić adres w api-config.js. Nie wpisuj tu haseł.";
+     return;
+   }
+   try{
+     const health=await api("/api/health");
+     message.classList.toggle("is-online",health.ok&&health.storage);
+     message.classList.toggle("is-offline",!health.storage);
+     message.textContent=health.storage
+       ?"Połączenie z bezpiecznym serwerem ksiąg aktywne. "+(health.imageAI?"Generator ilustracji dostępny.":"Generator AI wymaga dodatkowego uruchomienia.")
+       :"Serwer odpowiada, ale baza D1 lub magazyn R2 nie zostały jeszcze skonfigurowane.";
+   }catch(err){
+     message.classList.add("is-offline");
+     message.textContent="Nie udało się połączyć z serwerem ksiąg: "+err.message;
+   }
+ }
+ function show(view){
+   document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("is-active",button.dataset.view===view));
+   $("owner").hidden=view!=="owner";
+   $("admin").hidden=view!=="admin";
+   feedback("");
+ }
+ function getBookFromForm(){
+   if(!book)throw Error("Nie wczytano księgi.");
+   const copy={...book};
+   for(const key of editable)copy[key]=$("edit-"+key).value;
+   if(!copy.character.trim()||!copy.story.trim())throw Error("Imię postaci i historia nie mogą być puste.");
+   return copy;
+ }
+ function setBookOnForm(data){
+   book=data;
+   for(const key of editable)$("edit-"+key).value=book[key]||"";
+   $("editing-title").textContent="Edycja: "+book.character;
+   $("editing-id").textContent="ID księgi: "+ownerId;
+   $("crest-status").textContent=book.crest?"Herb obecny w księdze":"Brak herbu";
+   renderImages();
+ }
+ function renderImages(){
+   const list=$("edit-images-list");
+   list.replaceChildren();
+   (book?.photos||[]).forEach((photo,index)=>{
+     const card=document.createElement("div");card.className="image-card";
+     const img=document.createElement("img");img.src=photo.data;img.alt="Ilustracja "+(index+1);
+     const input=document.createElement("input");input.type="text";input.maxLength=160;input.value=photo.caption||"";input.setAttribute("aria-label","Podpis ilustracji "+(index+1));
+     input.addEventListener("input",()=>{book.photos[index].caption=input.value});
+     const btn=document.createElement("button");btn.className="button button--danger";btn.type="button";btn.textContent="Usuń ilustrację";
+     btn.addEventListener("click",()=>{book.photos.splice(index,1);renderImages();feedback("Obraz usunięto z projektu. Zapisz zmiany online, aby opublikować nową wersję.")});
+     card.append(img,input,btn);list.append(card);
+   });
+ }
+ function clearLogin(){
+   ownerId="";ownerPass="";book=null;illustration=null;
+   $("owner-login").hidden=false;$("owner-editor").hidden=true;
+   $("owner-password").value="";$("generated-preview").hidden=true;
+ }
+ async function ownerOpen(event){
+   event.preventDefault();
+   try{
+     const id=$("owner-id").value.trim(),password=$("owner-password").value;
+     if(!/^[\da-f-]{36}$/i.test(id))throw Error("Wpisz prawidłowy identyfikator księgi.");
+     if(!password)throw Error("Wpisz hasło księgi.");
+     feedback("Otwieram księgę…");
+     const out=await api("/api/books/"+encodeURIComponent(id)+"/access",{method:"POST",body:{password}});
+     if(out?.data?.format!=="ksiegi-graczy/book"||!out.data.book)throw Error("Nieprawidłowy format księgi.");
+     ownerId=id;ownerPass=password;
+     $("owner-password").value="";
+     setBookOnForm(out.data.book);
+     $("owner-login").hidden=true;$("owner-editor").hidden=false;
+     feedback("Księga została odblokowana. Możesz zmieniać jej treść i obrazy.");
+   }catch(err){feedback(err.message,true)}
+ }
+ async function saveEdits(){
+   try{
+     if(!ownerId||!ownerPass)throw Error("Najpierw odblokuj księgę.");
+     const updated=getBookFromForm();
+     feedback("Zapisuję kronikę na serwerze…");
+     await api("/api/books/"+encodeURIComponent(ownerId),{method:"PUT",body:{password:ownerPass,book:updated}});
+     book=updated;
+     $("editing-title").textContent="Edycja: "+book.character;
+     feedback("Zapisano. Zmiany są już dostępne w bibliotece.");
+   }catch(err){feedback(err.message,true)}
+ }
+ async function deleteOwner(){
+   if(!ownerId)return;
+   const title=book?.character||"księgę";
+   const typed=prompt("Aby nieodwracalnie usunąć księgę, wpisz jej imię postaci dokładnie:\n"+title);
+   if(typed!==title){if(typed!==null)feedback("Usuwanie anulowano — nazwa nie pasuje.",true);return}
+   try{
+     await api("/api/books/"+encodeURIComponent(ownerId),{method:"DELETE",body:{password:ownerPass}});
+     clearLogin();feedback("Księga została usunięta z publicznej biblioteki.");
+   }catch(err){feedback(err.message,true)}
+ }
+ async function changePassword(){
+   const fresh=$("new-password").value;
+   if(fresh.length<12){feedback("Hasło musi mieć co najmniej 12 znaków.",true);return}
+   if(!confirm("Zmienić hasło do tej księgi? Poprzednie hasło przestanie działać."))return;
+   try{
+     await api("/api/books/"+encodeURIComponent(ownerId)+"/password",{method:"POST",body:{password:ownerPass,newPassword:fresh}});
+     ownerPass=fresh;$("new-password").value="";
+     feedback("Hasło zmieniono. Zapisz je w bezpiecznym miejscu.");
+   }catch(err){feedback(err.message,true)}
+ }
+ async function shrink(file,max=960){
+   if(!["image/png","image/jpeg","image/webp"].includes(file.type))throw Error("Dozwolone są obrazy JPG, PNG i WebP.");
+   if(file.size>15_000_000)throw Error("Obraz jest zbyt duży (maks. 15 MB).");
+   const url=URL.createObjectURL(file);
+   try{
+     const image=new Image();image.src=url;
+     await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error("Nie udało się odczytać obrazu."))});
+     const ratio=Math.min(1,max/Math.max(image.naturalWidth,image.naturalHeight));
+     const canvas=document.createElement("canvas");
+     canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
+     canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
+     const ctx=canvas.getContext("2d");if(!ctx)throw Error("Brak obsługi obrazów.");
+     ctx.drawImage(image,0,0,canvas.width,canvas.height);
+     const data=canvas.toDataURL("image/webp",.74);
+     if(data.length>800000)throw Error("Obraz po przetworzeniu jest za duży.");
+     return data;
+   }finally{URL.revokeObjectURL(url)}
+ }
+ async function imagesInput(event){
+   const files=Array.from(event.target.files||[]);event.target.value="";
+   for(const file of files){
+     if(book.photos.length>=photoCap){feedback("Osiągnięto limit 12 ilustracji.",true);break}
+     try{
+       const data=await shrink(file);
+       book.photos.push({id:crypto.randomUUID(),data,caption:file.name.replace(/\.[^.]+$/,"").slice(0,160)});
+     }catch(err){feedback(err.message,true)}
+   }
+   renderImages();feedback("Obrazy dodano lokalnie. Kliknij „Zapisz zmiany online”, aby zaktualizować księgę.");
+ }
+ async function crestInput(event){
+   const file=event.target.files?.[0];event.target.value="";
+   if(!file)return;
+   try{
+     book.crest=await shrink(file,500);
+     $("crest-status").textContent="Nowy herb wybrany";
+     feedback("Herb dodano. Zapisz zmiany online, aby go opublikować.");
+   }catch(err){feedback(err.message,true)}
+ }
+ function suggestScene(){
+   const text=$("edit-story").value.trim();
+   if(!text){feedback("Najpierw dodaj tekst kroniki.",true);return}
+   const raw=text.replace(/^Rozdzia[łl][^\n]*\n/i,"").trim();
+   const first=raw.split(/\n\s*\n/).filter(x=>x.length>50)[0]||raw;
+   $("scene-prompt").value=first.replace(/\s+/g," ").slice(0,530);
+   feedback("Wybrano fragment opowieści. Możesz doprecyzować opis sceny.");
+ }
+ async function generateImage(){
+   const scene=$("scene-prompt").value.trim();
+   if(scene.length<10){feedback("Najpierw opisz scenę, którą chcesz przedstawić.",true);return}
+   const button=$("generate-image");button.disabled=true;
+   try{
+     feedback("Generowanie iluminacji roku 1400…");
+     const data=await api("/api/books/"+encodeURIComponent(ownerId)+"/illustrate",{method:"POST",body:{password:ownerPass,scene}});
+     illustration=data.image;
+     $("generated-image").src=illustration;
+     $("generated-preview").hidden=false;
+     feedback("Gotowe! Pozostało "+data.remaining+" generowań na dziś. Dodaj obraz do księgi.");
+   }catch(err){feedback(err.message,true)}
+   finally{button.disabled=false}
+ }
+ function attachImage(){
+   if(!illustration)return;
+   if(book.photos.length>=photoCap){feedback("Księga ma już 12 ilustracji.",true);return}
+   book.photos.push({id:crypto.randomUUID(),data:illustration,caption:$("scene-prompt").value.trim().slice(0,160)});
+   renderImages();$("generated-preview").hidden=true;illustration=null;
+   feedback("Dodano rycinę. Aby udostępnić ją w bibliotece, zapisz zmiany online.");
+ }
+ function adminEntry(item){
+   const row=document.createElement("article");row.className="admin-entry";
+   const details=document.createElement("div");
+   const title=document.createElement("h4");title.textContent=item.title;
+   const subtitle=document.createElement("p");subtitle.textContent=item.subtitle+" · Rok "+item.year;
+   const id=document.createElement("code");id.textContent=item.id;
+   const status=document.createElement("div");status.className="admin-entry__status"+(item.published?"":" off");
+   status.textContent=item.published?"Widoczna w bibliotece":"Ukryta";
+   details.append(title,subtitle,id,status);
+   const actions=document.createElement("div");actions.className="admin-entry__actions";
+   const toggle=document.createElement("button");toggle.className="button";toggle.type="button";
+   toggle.textContent=item.published?"Ukryj":"Opublikuj";
+   toggle.addEventListener("click",async()=>{
+     try{
+       await api("/api/admin/publish",{method:"POST",body:{adminPassword:adminPass,id:item.id,published:!item.published}});
+       feedback("Zmieniono widoczność księgi "+item.title+".");await loadAdminList();
+     }catch(err){feedback(err.message,true)}
+   });
+   const del=document.createElement("button");del.type="button";del.className="button button--danger";del.textContent="Usuń";
+   del.addEventListener("click",async()=>{
+     const typed=prompt("Usunąć księgę na stałe, bez hasła autora?\nWpisz dokładnie: "+item.title);
+     if(typed!==item.title)return;
+     try{
+       await api("/api/admin/delete",{method:"POST",body:{adminPassword:adminPass,id:item.id}});
+       feedback("Administrator usunął księgę "+item.title+".");await loadAdminList();
+     }catch(err){feedback(err.message,true)}
+   });
+   actions.append(toggle,del);row.append(details,actions);
+   return row;
+ }
+ async function loadAdminList(){
+   const data=await api("/api/admin/list",{method:"POST",body:{adminPassword:adminPass}});
+   const list=$("admin-list");list.replaceChildren();
+   if(!data.books?.length){const empty=document.createElement("p");empty.textContent="Nie ma jeszcze żadnej księgi online.";list.append(empty)}
+   else data.books.forEach(b=>list.append(adminEntry(b)));
+ }
+ async function adminLogin(event){
+   event.preventDefault();
+   const pass=$("admin-password").value;
+   if(!pass){feedback("Wpisz hasło administratora.",true);return}
+   try{
+     adminPass=pass;await loadAdminList();
+     $("admin-password").value="";
+     feedback("Lista ksiąg została pobrana. Możesz ukrywać i usuwać pozycje.");
+   }catch(err){adminPass="";feedback(err.message,true)}
+ }
+ function init(){
+   document.querySelectorAll("[data-view]").forEach(btn=>btn.addEventListener("click",()=>show(btn.dataset.view)));
+   $("owner-form").addEventListener("submit",ownerOpen);
+   $("admin-form").addEventListener("submit",adminLogin);
+   $("save-edits").addEventListener("click",saveEdits);
+   $("leave-editor").addEventListener("click",()=>{clearLogin();feedback("Zamknięto edytor.")});
+   $("delete-owner").addEventListener("click",deleteOwner);
+   $("change-password").addEventListener("click",changePassword);
+   $("edit-images").addEventListener("change",imagesInput);
+   $("edit-crest").addEventListener("change",crestInput);
+   $("clear-crest").addEventListener("click",()=>{if(!book)return;book.crest=null;$("crest-status").textContent="Herb usunięty lokalnie";feedback("Zapisz zmiany online, aby usunąć herb z księgi.")});
+   $("suggest-scene").addEventListener("click",suggestScene);
+   $("generate-image").addEventListener("click",generateImage);
+   $("attach-image").addEventListener("click",attachImage);
+   checkApi();
+ }
+ init();
+})();
