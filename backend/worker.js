@@ -175,7 +175,7 @@ async function objectBook(env,id){
 }
 function publicFromBook(id,book){
  return {id,file:bookPath(id),title:book.character,subtitle:book.subtitle,year:book.year,
-  cover:book.cover,paper:book.paper,spine:book.spine};
+  cover:book.cover,paper:book.paper,spine:book.spine,frame:book.frame||"plain"};
 }
 async function updateCatalog(env,id,entry){
  // Optimistic concurrency: GitHub requires the current SHA of catalog.json.
