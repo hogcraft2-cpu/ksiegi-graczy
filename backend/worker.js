@@ -19,7 +19,14 @@ const ID_RE=/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/;
 const today=()=>new Date().toISOString().slice(0,10);
 const timestamp=()=>new Date().toISOString();
 const clean=(value,max)=>typeof value==="string"?value.slice(0,max):"";
-const origins=env=>(env.ALLOWED_ORIGINS||"https://hogcraft2-cpu.github.io").split(",").map(s=>s.trim()).filter(Boolean);
+// Zawsze dopuszczamy oficjalne GitHub Pages. Zmienna w panelu Cloudflare
+// rozszerza listę zamiast przypadkowo wyłączać dotychczasową stronę.
+const origins=env=>{
+ const list=["https://hogcraft2-cpu.github.io",...(env.ALLOWED_ORIGINS||"").split(",")];
+ return [...new Set(list.map(value=>{
+   try{return new URL(value.trim()).origin}catch(_){return ""}
+ }).filter(Boolean))];
+};
 function cors(request,env){
  const origin=request.headers.get("Origin")||"";
  const head={"Vary":"Origin","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"};
@@ -216,7 +223,7 @@ async function handle(request,env){
  const url=new URL(request.url);
  const path=url.pathname.replace(/\/$/,"")||"/";
  if(path==="/api/health"&&request.method==="GET"){
-   return result(request,env,{ok:true,storage:!!env.DB,githubConfigured:!!(env.GITHUB_TOKEN&&env.GITHUB_TOKEN.length>=25),imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16)});
+   return result(request,env,{ok:true,storage:!!env.DB,githubConfigured:!!(env.GITHUB_TOKEN&&env.GITHUB_TOKEN.length>=25),imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16),allowedOrigins:origins(env)});
  }
  if(!env.DB)throw new ApiError(503,"Serwer nie ma podłączonej bazy D1.");
  if(!env.GITHUB_TOKEN||env.GITHUB_TOKEN.length<25)throw new ApiError(503,"Serwer nie ma ustawionego tajnego tokenu GitHub.");
