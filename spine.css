@@ -205,3 +205,102 @@
   .book-spine__title{font-size:11px}
   .book-spine__subtitle{font-size:9px}
 }
+
+
+/* Dodatkowe barwy opraw, wspólne dla okładki kreatora i grzbietu biblioteki. */
+.cover-oxblood,.book-spine[data-cover="oxblood"]{--cover-base:#71252e;--cover-dark:#240a12;--cover-glow:#b84b4d}
+.cover-ivory,.book-spine[data-cover="ivory"]{--cover-base:#bda77e;--cover-dark:#63503a;--cover-glow:#f4e6c7}
+.cover-obsidian,.book-spine[data-cover="obsidian"]{--cover-base:#23262a;--cover-dark:#080d12;--cover-glow:#54595d}
+.cover-violet,.book-spine[data-cover="violet"]{--cover-base:#49304e;--cover-dark:#1b1326;--cover-glow:#886392}
+.cover-teal,.book-spine[data-cover="teal"]{--cover-base:#265958;--cover-dark:#09292d;--cover-glow:#659e9a}
+.cover-copper,.book-spine[data-cover="copper"]{--cover-base:#80513b;--cover-dark:#28170f;--cover-glow:#c17b53}
+.cover-ochre,.book-spine[data-cover="ochre"]{--cover-base:#9a7432;--cover-dark:#4a2d14;--cover-glow:#e3b75d}
+.cover-slate,.book-spine[data-cover="slate"]{--cover-base:#455056;--cover-dark:#172329;--cover-glow:#85949e}
+.book-cover.cover-ivory{color:#402a1a}
+.book-cover.cover-ivory :is(.cover-title,.cover-subtitle,.cover-kicker,.cover-year,.cover-ornament){color:#4c3321;text-shadow:0 1px #f8ebd07a}
+.book-cover.cover-ivory .cover-frame{border-color:#84633c;outline-color:#967047}
+.book-cover.cover-ivory .cover-crest{color:#856433}
+.cover-option__swatch.cover-ivory::after{color:#4a3420;border-color:#886544;text-shadow:none}
+.book-spine[data-cover="ivory"]{--gilt:#b68b49;--gilt-bright:#f4d795;--gilt-shadow:#7b552a}
+.book-spine[data-cover="obsidian"]{--gilt:#c6b79a;--gilt-bright:#f6ebd1;--gilt-shadow:#665d52}
+.book-spine[data-cover="violet"]{--gilt:#d8b67d;--gilt-bright:#f4ddaf;--gilt-shadow:#7d5831}
+.book-spine[data-cover="teal"]{--gilt:#c4b895;--gilt-bright:#f0e2b5;--gilt-shadow:#677263}
+.book-spine[data-cover="ochre"]{--gilt:#e9c78a;--gilt-bright:#f8e6bf;--gilt-shadow:#775027}
+
+/* Sześć nowych opraw grzbietów — symbole, listwy i metal różnią się fizycznie. */
+.book-spine[data-finish="royal"]{--gilt:#e1ba72;--gilt-bright:#ffe3a4;--gilt-shadow:#855c29}
+.book-spine[data-finish="royal"] .book-spine__finial::before{content:"♛"}
+.book-spine[data-finish="royal"] .book-spine__cartouche{
+  border:3px double #edcb89;border-radius:10px 10px 2px 2px;
+  background:linear-gradient(90deg,#231315,#683c26,#241218);
+  box-shadow:inset 0 0 0 3px #9a5a3670,0 0 6px #f6c5744d;
+}
+.book-spine[data-finish="royal"] .book-spine__ridges .book-spine__ridge{height:13px;border-bottom-color:#57391d}
+.book-spine[data-finish="royal"] .book-spine__rosette{font-size:18px}
+
+.book-spine[data-finish="crusader"]{--gilt:#b9bfc2;--gilt-bright:#f0eddf;--gilt-shadow:#555d65}
+.book-spine[data-finish="crusader"] .book-spine__finial::before{content:"✠"}
+.book-spine[data-finish="crusader"] .book-spine__cartouche{
+ border:2px solid #c3c5c3;border-radius:0;
+ background:repeating-linear-gradient(0deg,#242728 0 6px,#3d3934 7px 14px);
+ box-shadow:inset 0 0 0 3px #6d6960,0 2px 7px #0009;
+}
+.book-spine[data-finish="crusader"] .book-spine__clasp{
+ height:15px;background:linear-gradient(180deg,#cdd1cd,#62686a,#1c2227,#9da6a9);
+}
+.book-spine[data-finish="crusader"] .book-spine__monogram{border-radius:3px;transform:rotate(45deg)}
+.book-spine[data-finish="crusader"] .book-spine__monogram{font-size:0}
+.book-spine[data-finish="crusader"] .book-spine__monogram::after{content:"✠";font-size:15px;transform:rotate(-45deg)}
+
+.book-spine[data-finish="archivist"]{--gilt:#c5aa7a;--gilt-bright:#f4dfbb;--gilt-shadow:#786547}
+.book-spine[data-finish="archivist"] .book-spine__finial::before{content:"❧"}
+.book-spine[data-finish="archivist"] .book-spine__cartouche{
+ border:1px solid #cba976;background:linear-gradient(90deg,#1b140d,#544633,#1c160f);
+ box-shadow:inset 0 0 0 2px #1a110a,inset 0 0 0 4px #b48d5578;
+}
+.book-spine[data-finish="archivist"] .book-spine__ridge{height:4px}
+.book-spine[data-finish="archivist"] .book-spine__clasp{height:11px}
+.book-spine[data-finish="archivist"] .book-spine__year{font-style:italic}
+
+.book-spine[data-finish="alchemist"]{--gilt:#d0a17c;--gilt-bright:#ffdaaf;--gilt-shadow:#876247}
+.book-spine[data-finish="alchemist"] .book-spine__finial::before{content:"☿"}
+.book-spine[data-finish="alchemist"] .book-spine__cartouche{
+ border:2px solid #af8267;border-radius:15px 15px 15px 15px;
+ background:radial-gradient(ellipse at 50% 28%,#81684d,#2b2627 72%);
+ box-shadow:inset 0 0 0 4px #3e2821,0 0 7px #0009;
+}
+.book-spine[data-finish="alchemist"] .book-spine__monogram{
+ border-radius:50%;background:radial-gradient(circle at 33% 26%,#e0c998,#699c81 48%,#2c5d67);
+ color:#173d47;
+}
+.book-spine[data-finish="alchemist"] .book-spine__rosette{color:#b8debf}
+
+.book-spine[data-finish="rustic"]{--gilt:#a4875c;--gilt-bright:#dac69e;--gilt-shadow:#4d351e}
+.book-spine[data-finish="rustic"] .book-spine__finial::before{content:"✦"}
+.book-spine[data-finish="rustic"] .book-spine__cartouche{
+ border:1px dashed #c1a67c;border-radius:0;
+ background:repeating-linear-gradient(92deg,#36251d 0 8px,#60422a 10px 20px,#38271c 22px 27px);
+ box-shadow:inset 0 0 0 4px #241510,0 2px 6px #000b;
+}
+.book-spine[data-finish="rustic"] .book-spine__clasp{
+ height:11px;background:linear-gradient(180deg,#998061,#493728,#1d130c);
+ border-color:#66523d;
+}
+.book-spine[data-finish="rustic"] .book-spine__frame{border-style:dashed;opacity:.65}
+
+.book-spine[data-finish="celestial"]{--gilt:#c3c9db;--gilt-bright:#f1e7c9;--gilt-shadow:#6b6e84}
+.book-spine[data-finish="celestial"] .book-spine__finial::before{content:"✧"}
+.book-spine[data-finish="celestial"] .book-spine__cartouche{
+ border:2px double #aeb4d0;border-radius:8px;
+ background:
+ radial-gradient(circle at 35% 15%,#fff4d777 0 1px,transparent 2px),
+ radial-gradient(circle at 73% 54%,#fff4d766 0 1px,transparent 2px),
+ radial-gradient(circle at 21% 82%,#fff4d755 0 1px,transparent 2px),
+ linear-gradient(90deg,#18152a,#353451,#141527);
+ box-shadow:inset 0 0 0 3px #5550787a,0 0 10px #e8daf439;
+}
+.book-spine[data-finish="celestial"] .book-spine__monogram{
+ background:radial-gradient(circle at 30% 20%,#fffde4,#a5bbdb 62%,#626a90);
+ color:#29384f;
+}
+.book-spine[data-finish="celestial"] .book-spine__rosette{color:#c7ccf3}
