@@ -116,13 +116,13 @@
 .frame-option__sample::after{content:"";z-index:0;position:absolute;inset:7px;pointer-events:none;box-sizing:border-box}
 
 /* Prosty — cienka linia tuszu. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="plain"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="plain"][data-frame]::after{
  content:"";position:absolute;inset:12px;pointer-events:none;opacity:.25;
  border:1px solid currentColor;background:none;box-shadow:none;outline:0;
 }
 
 /* Filigran — mosiężna ażurowa ramka, dyskretne złote naroża. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="filigree"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="filigree"][data-frame]::after{
  content:"";position:absolute;inset:10px;pointer-events:none;opacity:.75;
  border:3px double #b78641;
  box-shadow:inset 0 0 0 2px #f3d39440,0 0 0 1px #91652e7d;
@@ -137,7 +137,7 @@
 }
 
 /* Gotycka — ciemne smukłe obramowanie z arkadami. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="gothic"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="gothic"][data-frame]::after{
  content:"";position:absolute;inset:11px;pointer-events:none;opacity:.72;
  border:2px solid #604b38;outline:1px solid #998069;outline-offset:-6px;
  border-radius:30px 30px 2px 2px / 17px 17px 2px 2px;
@@ -150,7 +150,7 @@
 }
 
 /* Heraldyczna — narożniki z tarczami. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="heraldic"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="heraldic"][data-frame]::after{
  content:"";position:absolute;inset:10px;pointer-events:none;opacity:.77;
  border:3px double #944631;outline:1px solid #b68c54;outline-offset:-7px;
  box-shadow:inset 0 0 0 1px #a3774d80;
@@ -166,7 +166,7 @@
 }
 
 /* Roślinna — zielone listki i wici wokół pergaminu. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="vines"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="vines"][data-frame]::after{
  content:"";position:absolute;inset:10px;pointer-events:none;opacity:.72;
  border:2px dashed #5e7c4c;outline:1px solid #708f58;outline-offset:4px;
  box-shadow:inset 0 0 0 2px #b0ad6d31;
@@ -182,7 +182,7 @@
 }
 
 /* Królewska — ceremonialna złota bordiura. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="royal"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="royal"][data-frame]::after{
  content:"";position:absolute;inset:8px;pointer-events:none;opacity:.89;
  border:5px double #aa823e;outline:1px solid #dab56b;outline-offset:3px;
  box-shadow:inset 0 0 0 3px #8e48312a,inset 0 0 0 5px #e4ba6a6b,0 0 3px #31201133;
@@ -198,7 +198,7 @@
 }
 
 /* Kronikarska — pionowe marginesy do notatek. */
-:is(.folio,.reader__page,.frame-option__sample)[data-frame="scribal"]::after{
+:is(.folio,.reader__page,.frame-option__sample)[data-frame="scribal"][data-frame]::after{
  content:"";position:absolute;inset:10px 12px;pointer-events:none;opacity:.65;
  border-top:1px solid #7b5236;border-bottom:1px solid #7b5236;
  border-left:3px double #a36648;border-right:3px double #a36648;
