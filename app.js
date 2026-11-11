@@ -194,13 +194,15 @@
     FIELDS.forEach(key=>$(key).value=state[key]||"");
     renderCrest();paperMarkup();photoMarkup();updatePreview();
   }
+  // D1 ma limit 2 MB na rekord. Kompresujemy lokalnie i zachowujemy zdjęcia w projekcie JSON.
+  const ONLINE_BOOK_LIMIT=1_500_000;
+  const estimateOnlineSize=book=>new TextEncoder().encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book})).length;
   async function resizeImage(file,maxSide,quality){
     if(!["image/png","image/jpeg","image/webp"].includes(file.type))throw Error("Dozwolone są tylko obrazy JPG, PNG i WebP.");
     if(file.size>15_000_000)throw Error("Obraz nie może przekraczać 15 MB.");
     const url=URL.createObjectURL(file);
     try{
-      const img=new Image();
-      img.src=url;
+      const img=new Image();img.src=url;
       await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error("Nie udało się odczytać obrazu."))});
       if(!img.naturalWidth||!img.naturalHeight)throw Error("Nieprawidłowy obraz");
       const factor=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
@@ -210,9 +212,24 @@
       const ctx=canvas.getContext("2d");
       if(!ctx)throw Error("Nie można przygotować obrazu");
       ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      const data=canvas.toDataURL("image/webp",quality);
-      if(!isImage(data))throw Error("Plik jest zbyt duży.");
-      return data;
+      const target=maxSide<=520?110_000:165_000;
+      let data="";
+      for(const q of [quality,.64,.50,.37,.27]){
+        data=canvas.toDataURL("image/webp",q);
+        if(data.length<=target&&isImage(data))return data;
+      }
+      // Zmniejszamy wymiary dopiero gdy sama redukcja jakości nie wystarczy.
+      for(let attempt=0;attempt<6;attempt++){
+        const small=document.createElement("canvas");
+        small.width=Math.max(1,Math.round(canvas.width*.82));
+        small.height=Math.max(1,Math.round(canvas.height*.82));
+        small.getContext("2d").drawImage(canvas,0,0,small.width,small.height);
+        canvas.width=small.width;canvas.height=small.height;
+        canvas.getContext("2d").drawImage(small,0,0);
+        data=canvas.toDataURL("image/webp",.46);
+        if(data.length<=target&&isImage(data))return data;
+      }
+      throw Error("Obraz jest za duży, by zapisać go w bezpłatnej bazie. Wybierz mniejszy plik.");
     }finally{URL.revokeObjectURL(url)}
   }
   function maxChars(){
@@ -407,6 +424,8 @@
     if(!state.character.trim()||!state.story.trim()){notify("Przed publikacją wpisz imię postaci i jej historię.");return}
     if(password.length<12||password.length>128){notify("Hasło musi zawierać od 12 do 128 znaków.");return}
     if(password!==confirmed){notify("Podane hasła nie są takie same.");return}
+    const bytes=estimateOnlineSize(bookForOnline());
+    if(bytes>ONLINE_BOOK_LIMIT){notify("Księga ma "+Math.ceil(bytes/1024)+" KB. Limit publikacji w darmowej bazie D1 to około 1465 KB. Usuń część zdjęć lub zmniejsz je.");return}
     if(lastPublishedId&&!confirm("Ta księga została już opublikowana. Utworzyć kolejną, osobną kopię?"))return;
     publishing=true;$("publish-online").disabled=true;
     const status=$("online-status");
@@ -435,6 +454,7 @@
       const parsed=JSON.parse(await file.text());
       if(parsed?.format!=="ksiegi-graczy/book" || parsed?.version!==1 || !parsed.book || typeof parsed.book!=="object")throw Error("Nieobsługiwany format księgi");
       const result=normalize(parsed.book);
+      // Zachowujemy starsze projekty nawet jeśli przekraczają nowy limit publikacji D1.
       if(!confirm("Wczytać księgę? Zastąpi ona aktualny projekt w przeglądarce."))return;
       state=result;
       closeBook();fillFields();saveDraft();showTab("story");
