@@ -5,7 +5,9 @@
 const encoder=new TextEncoder();
 const decodeHex=x=>Uint8Array.from(x.match(/.{1,2}/g)||[],c=>parseInt(c,16));
 const toHex=bytes=>Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,"0")).join("");
-const PASSWORD_ITERATIONS=160000;
+// Cloudflare Workers odrzuca >100 000 iteracji PBKDF2 (NotSupportedError).
+// Zachowujemy losową sól 128-bitową; w razie migracji istniejących rekordów trzeba uwzględnić ich koszt.
+const PASSWORD_ITERATIONS=100000;
 const PUBLIC_LIMIT=1_850_000;
 const BOOK_LIMIT=850_000; // GitHub Contents API: plik JSON zachowujemy poniżej 1 MB
 const IMAGE_LIMIT=250_000;
