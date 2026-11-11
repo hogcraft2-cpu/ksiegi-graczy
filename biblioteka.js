@@ -3,6 +3,8 @@
 (() => {
   "use strict";
   const $=id=>document.getElementById(id);
+  const API_BASE=String(window.KSIEGI_API_BASE||"").trim().replace(/\/+$/,"");
+  const API_READY=/^https:\/\//.test(API_BASE)||/^http:\/\/localhost:\d+$/.test(API_BASE);
   const SAFE_BOOK=/^books\/[a-z0-9][a-z0-9-]*\.json$/;
   const SAFE_ASSET=/^(?:\.\/)?assets\/[a-z0-9\/_-]+\.(?:svg|png|jpe?g|webp)$/i;
   const SAFE_IMAGE=/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
@@ -37,18 +39,37 @@
     }));
   }
   async function loadCatalog(){
+    // Połączenie z API jest opcjonalne: dotychczasowe przykładowe kroniki nadal można czytać offline od zaplecza.
+    const errors=[];
+    let staticItems=[],onlineItems=[];
     try{
       const response=await fetch("./books/catalog.json",{cache:"no-store"});
-      if(!response.ok)throw new Error("HTTP "+response.status);
-      const data=await response.json();
-      library=normalizeCatalog(data);
-      filterBooks();
-    }catch(error){
-      console.error("Błąd katalogu:",error);
-      $("shelves").replaceChildren();
-      showEmpty("Nie udało się wczytać katalogu. Sprawdź publikację pliku books/catalog.json.");
-      $("book-count").textContent="Brak połączenia z katalogiem";
+      if(!response.ok)throw Error("HTTP "+response.status);
+      staticItems=normalizeCatalog(await response.json());
+    }catch(error){errors.push("Pliki GitHub: "+error.message)}
+    if(API_READY){
+      try{
+        const response=await fetch(API_BASE+"/api/books",{cache:"no-store"});
+        if(!response.ok)throw Error("HTTP "+response.status);
+        const data=await response.json();
+        onlineItems=(Array.isArray(data.books)?data.books:[]).filter(book=>/^[a-f\d-]{36}$/i.test(book.id)).map(book=>({
+          id:book.id,file:null,apiId:book.id,
+          title:cleaned(book.title,85)||"Kronika bez tytułu",
+          subtitle:cleaned(book.subtitle,110)||"Dzieje bohatera",
+          year:cleaned(book.year,30),cover:COVERS.includes(book.cover)?book.cover:"burgundy",
+          paper:PAPERS.includes(book.paper)?book.paper:"classic",
+          spine:SPINES.includes(book.spine)?book.spine:"illuminated"
+        }));
+      }catch(error){errors.push("Serwer ksiąg: "+error.message)}
     }
+    library=[...onlineItems,...staticItems];
+    if(library.length)filterBooks();
+    else{
+      $("shelves").replaceChildren();
+      showEmpty(errors.length?"Nie udało się wczytać katalogu: "+errors.join("; "):"Nie opublikowano jeszcze ksiąg.");
+      $("book-count").textContent="0 ksiąg w zbiorach";
+    }
+    if(errors.length)console.warn("Niektóre źródła ksiąg są niedostępne:",errors);
   }
   function showEmpty(message){
     $("catalog-empty").hidden=false;
@@ -145,7 +166,8 @@
     renderShelves();
   }
   async function fetchBook(item){
-    const response=await fetch("./"+item.file,{cache:"no-store"});
+    const uri=item.apiId?API_BASE+"/api/books/"+encodeURIComponent(item.apiId):"./"+item.file;
+    const response=await fetch(uri,{cache:"no-store"});
     if(!response.ok)throw new Error("Nie udało się pobrać księgi (HTTP "+response.status+")");
     const data=await response.json();
     if(!data||data.format!=="ksiegi-graczy/book"||data.version!==1||!data.book)throw new Error("Nieobsługiwany plik księgi");
