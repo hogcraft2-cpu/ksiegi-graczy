@@ -35,13 +35,16 @@
    }
    try{
      const health=await api("/api/health");
-     message.classList.toggle("is-online",health.ok&&health.storage);
-     message.classList.toggle("is-offline",!health.storage);
+     const ready=!!(health.ok&&health.storage&&health.adminConfigured&&health.githubConfigured);
+     message.classList.toggle("is-online",ready);
+     message.classList.toggle("is-offline",!ready);
      message.textContent=!health.storage
-       ?"Serwer odpowiada, ale baza D1 lub magazyn R2 nie zostały jeszcze skonfigurowane."
+       ?"Serwer odpowiada, ale prywatna baza Cloudflare D1 nie została jeszcze podłączona."
        :!health.adminConfigured
-        ?"Baza ksiąg jest dostępna, ale administrator musi jeszcze ustawić sekret ADMIN_SECRET."
-        :"Połączenie z bezpiecznym serwerem ksiąg aktywne. "+(health.imageAI?"Generator ilustracji dostępny.":"Generator AI wymaga dodatkowego uruchomienia.");
+        ?"Administrator musi jeszcze ustawić tajne hasło ADMIN_SECRET."
+        :!health.githubConfigured
+         ?"Administrator musi jeszcze ustawić tajny token GITHUB_TOKEN do publicznych książek."
+         :"Publiczny GitHub i prywatna D1 są połączone. "+(health.imageAI?"Generator ilustracji dostępny.":"Generator AI wymaga dodatkowego uruchomienia.");
    }catch(err){
      message.classList.add("is-offline");
      message.textContent="Nie udało się połączyć z serwerem ksiąg: "+err.message;
