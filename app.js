@@ -7,28 +7,220 @@
   const API_BASE=String(window.KSIEGI_API_BASE||"").trim().replace(/\/+$/,"");
   let publishing=false, lastPublishedId="";
   const PAPERS = [
-    {id:"classic",name:"Pergamin klasyczny",description:"Stary, ciepły pergamin"},
-    {id:"royal",name:"Królewski iluminowany",description:"Złoto i rubinowe ramy"},
-    {id:"battle",name:"Kronika bitewna",description:"Surowe karty kronikarza"},
-    {id:"monastery",name:"Skryptorium zakonne",description:"Jasny manuskrypt"},
-    {id:"nocturne",name:"Nocna kronika",description:"Atrament i półmrok"}
-  ];
+    {
+        "id": "classic",
+        "name": "Pergamin klasyczny",
+        "description": "Ciepłe, postarzone karty"
+    },
+    {
+        "id": "royal",
+        "name": "Królewski iluminowany",
+        "description": "Rubinowe obramowania"
+    },
+    {
+        "id": "battle",
+        "name": "Kronika bitewna",
+        "description": "Surowy papier kampanii"
+    },
+    {
+        "id": "monastery",
+        "name": "Skryptorium zakonne",
+        "description": "Jasne, liniowane karty"
+    },
+    {
+        "id": "nocturne",
+        "name": "Nocna kronika",
+        "description": "Atrament i półmrok"
+    },
+    {
+        "id": "vellum",
+        "name": "Welin szlachecki",
+        "description": "Jasna, gładka skóra"
+    },
+    {
+        "id": "marbled",
+        "name": "Marmurkowy kodeks",
+        "description": "Barwiony pergamin"
+    },
+    {
+        "id": "scholar",
+        "name": "Księga uczonego",
+        "description": "Notatki pisarza"
+    },
+    {
+        "id": "herbarium",
+        "name": "Zielnik opactwa",
+        "description": "Mchy i roślinne zdobienia"
+    },
+    {
+        "id": "ash",
+        "name": "Kronika z popiołów",
+        "description": "Przypalone brzegi"
+    },
+    {
+        "id": "azure",
+        "name": "Błękitna kronika",
+        "description": "Niebieski atrament i złoto"
+    },
+    {
+        "id": "crimson",
+        "name": "Rubinowa kronika",
+        "description": "Czerwień i miedź"
+    },
+    {
+        "id": "cathedral",
+        "name": "Księga katedralna",
+        "description": "Kamienne iluminacje"
+    },
+    {
+        "id": "winter",
+        "name": "Zimowa kronika",
+        "description": "Srebrzyste, chłodne karty"
+    }
+];
   const COVERS = [
-    {id:"burgundy",name:"Bordo"},
-    {id:"forest",name:"Zieleń"},
-    {id:"midnight",name:"Granat"},
-    {id:"chestnut",name:"Brąz"}
-  ];
+    {
+        "id": "burgundy",
+        "name": "Bordo"
+    },
+    {
+        "id": "forest",
+        "name": "Zieleń"
+    },
+    {
+        "id": "midnight",
+        "name": "Granat"
+    },
+    {
+        "id": "chestnut",
+        "name": "Brąz"
+    },
+    {
+        "id": "oxblood",
+        "name": "Karmazyn"
+    },
+    {
+        "id": "ivory",
+        "name": "Kość słoniowa"
+    },
+    {
+        "id": "obsidian",
+        "name": "Obsydian"
+    },
+    {
+        "id": "violet",
+        "name": "Purpura"
+    },
+    {
+        "id": "teal",
+        "name": "Morski"
+    },
+    {
+        "id": "copper",
+        "name": "Miedź"
+    },
+    {
+        "id": "ochre",
+        "name": "Złoty ochrowy"
+    },
+    {
+        "id": "slate",
+        "name": "Łupek"
+    }
+];
   const SPINES = [
-    {id:"illuminated",name:"Iluminowany",note:"Złocone filigrany"},
-    {id:"ironbound",name:"Żelazny",note:"Surowe metalowe okucia"},
-    {id:"monastic",name:"Zakonny",note:"Skromne tłoczenia"},
-    {id:"merchant",name:"Kupiecki",note:"Bogaty skórzany kartusz"}
-  ];
+    {
+        "id": "illuminated",
+        "name": "Iluminowany",
+        "note": "Złocone filigrany"
+    },
+    {
+        "id": "ironbound",
+        "name": "Żelazny",
+        "note": "Surowe metalowe okucia"
+    },
+    {
+        "id": "monastic",
+        "name": "Zakonny",
+        "note": "Skromne tłoczenia"
+    },
+    {
+        "id": "merchant",
+        "name": "Kupiecki",
+        "note": "Bogaty skórzany kartusz"
+    },
+    {
+        "id": "royal",
+        "name": "Koronny",
+        "note": "Korona i złote listwy"
+    },
+    {
+        "id": "crusader",
+        "name": "Krzyżowy",
+        "note": "Krzyż i srebrne nitowanie"
+    },
+    {
+        "id": "archivist",
+        "name": "Archiwisty",
+        "note": "Cienkie, podwójne żebra"
+    },
+    {
+        "id": "alchemist",
+        "name": "Alchemika",
+        "note": "Miedź i tajemne znaki"
+    },
+    {
+        "id": "rustic",
+        "name": "Wędrownego",
+        "note": "Drewno i stara skóra"
+    },
+    {
+        "id": "celestial",
+        "name": "Astralny",
+        "note": "Gwiazdy i delikatny ornament"
+    }
+];
+  const FRAMES = [
+    {
+        "id": "plain",
+        "name": "Prosty",
+        "note": "Drobna linia"
+    },
+    {
+        "id": "filigree",
+        "name": "Filigran",
+        "note": "Mosiężne zawijasy"
+    },
+    {
+        "id": "gothic",
+        "name": "Gotycka",
+        "note": "Strzeliste łuki"
+    },
+    {
+        "id": "heraldic",
+        "name": "Heraldyczna",
+        "note": "Tarcze i lilie"
+    },
+    {
+        "id": "vines",
+        "name": "Roślinna",
+        "note": "Wici i gałązki"
+    },
+    {
+        "id": "royal",
+        "name": "Królewska",
+        "note": "Podwójne złote ramy"
+    },
+    {
+        "id": "scribal",
+        "name": "Kronikarska",
+        "note": "Marginesy skryby"
+    }
+];
   const FIELDS = ["character","subtitle","year","author","summary","story"];
   const DEFAULT = () => ({
     character:"", subtitle:"", year:"1403", author:"", summary:"", story:"",
-    paper:"classic", cover:"burgundy", spine:"illuminated", crest:null, photos:[]
+    paper:"classic", cover:"burgundy", spine:"illuminated", frame:"plain", crest:null, photos:[]
   });
   const SAFE_IMAGE = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
   const MAX_IMAGES = 12;
@@ -46,6 +238,7 @@
   const safeStyle = name => PAPERS.some(x => x.id===name) ? name : "classic";
   const safeCover = name => COVERS.some(x => x.id===name) ? name : "burgundy";
   const safeSpine = name => SPINES.some(x => x.id===name) ? name : "illuminated";
+  const safeFrame = name => FRAMES.some(x => x.id===name) ? name : "plain";
   const selectedFileName = name => (name||"ksiega-postaci").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/ł/g,"l").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,55) || "ksiega-postaci";
 
   function notify(message){
@@ -62,6 +255,7 @@
     out.paper=safeStyle(raw.paper);
     out.cover=safeCover(raw.cover);
     out.spine=safeSpine(raw.spine);
+    out.frame=safeFrame(raw.frame);
     if(isImage(raw.crest))out.crest=raw.crest;
     if(Array.isArray(raw.photos))out.photos=raw.photos.slice(0,MAX_IMAGES).filter(x=>x&&isImage(x.data)).map((photo,i)=>({
       id:String(photo.id||("zdjecie-"+i)).slice(0,50),
@@ -93,8 +287,8 @@
   function paperMarkup(){
     $("paper-options").innerHTML=PAPERS.map(item=>`
       <button type="button" class="paper-option ${state.paper===item.id?"is-selected":""}" data-paper="${item.id}" aria-pressed="${state.paper===item.id}">
-        <span class="paper-option__sample" data-paper="${item.id}">✥<br>Kronika</span>
-        <span class="paper-option__name">${escapeHtml(item.name)} ${state.paper===item.id?'<span class="paper-option__check">✓</span>':""}</span>
+        <span class="paper-option__sample" data-paper="${item.id}"><span class="paper-option__illumination">❦</span><span class="paper-option__mini-title">Kronika</span><span class="paper-option__mini-rule"></span><span class="paper-option__mini-lines" aria-hidden="true"></span></span>
+        <span class="paper-option__name">${escapeHtml(item.name)} ${state.paper===item.id?'<span class="paper-option__check">✓</span>':""}</span><span class="paper-option__description">${escapeHtml(item.description)}</span>
       </button>`).join("");
     $("paper-options").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{
       state.paper=btn.dataset.paper;
@@ -108,7 +302,21 @@
       state.cover=btn.dataset.cover;
       paperMarkup();updatePreview();saveDraft();
     }));
-    spineMarkup();
+    spineMarkup();frameMarkup();
+  }
+  function frameMarkup(){
+    const target=$("frame-options");
+    if(!target)return;
+    target.innerHTML=FRAMES.map(item=>`<button type="button" class="frame-option ${state.frame===item.id?"is-selected":""}" data-frame-choice="${item.id}" aria-pressed="${state.frame===item.id}">
+      <span class="frame-option__sample" data-paper="${safeStyle(state.paper)}" data-frame="${item.id}" aria-hidden="true"><span>✥</span><span>LIBER</span><span class="frame-option__sample-rule"></span></span>
+      <span class="frame-option__name">${escapeHtml(item.name)}</span>
+      <span class="frame-option__detail">${escapeHtml(item.note)}</span>
+      ${state.frame===item.id?'<span class="frame-option__checked">✓ Wybrana</span>':""}
+    </button>`).join("");
+    target.querySelectorAll("[data-frame-choice]").forEach(btn=>btn.addEventListener("click",()=>{
+      state.frame=safeFrame(btn.dataset.frameChoice);
+      frameMarkup();updatePreview();saveDraft();
+    }));
   }
   function subtitleLines(value){
     const words=String(value||"").trim().split(/\s+/).filter(Boolean);
@@ -286,6 +494,7 @@
   }
   function renderFolio(folio,page,index){
     folio.dataset.paper=state.paper;
+    folio.dataset.frame=safeFrame(state.frame);
     const head=`<div class="folio-kicker">✥ &nbsp; LIBER CHRONICARUM &nbsp; ✥</div>`;
     let inner="";
     if(page.kind==="title"){
@@ -334,6 +543,7 @@
     $("cover-year").textContent="ANNO DOMINI · "+(plainText(state.year)||"—");
     $("book-cover").className="book-cover cover-"+safeCover(state.cover)+(busy?" is-opening":"");
     $("theme-label").textContent=PAPERS.find(x=>x.id===state.paper)?.name||"Pergamin";
+    frameMarkup();
     renderCrest();renderSpread();
   }
   function schedulePreview(){
@@ -381,7 +591,7 @@
     return {
       character:state.character,subtitle:state.subtitle,year:state.year,
       author:state.author,summary:state.summary,story:state.story,
-      paper:state.paper,cover:state.cover,spine:state.spine,
+      paper:state.paper,cover:state.cover,spine:state.spine,frame:state.frame,
       crest:state.crest,photos:state.photos.map(photo=>({...photo}))
     };
   }
