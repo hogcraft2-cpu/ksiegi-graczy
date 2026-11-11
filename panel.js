@@ -7,7 +7,7 @@
  const API=String(window.KSIEGI_API_BASE||"").trim().replace(/\/+$/,"");
  const configured=/^https:\/\/[\w.-]+(?::\d+)?$/.test(API) || /^http:\/\/localhost:\d+$/.test(API);
  let ownerId="",ownerPass="",adminPass="",book=null,illustration=null;
- const editable=["character","subtitle","year","author","summary","story","paper","cover","spine"];
+ const editable=["character","subtitle","year","author","summary","story","paper","cover","spine","frame"];
  const photoCap=12;
  let lastError="";
  function feedback(message,error=false){
@@ -65,7 +65,7 @@
  }
  function setBookOnForm(data){
    book=data;
-   for(const key of editable)$("edit-"+key).value=book[key]||"";
+   for(const key of editable)$("edit-"+key).value=book[key]||(key==="frame"?"plain":"");
    $("editing-title").textContent="Edycja: "+book.character;
    $("editing-id").textContent="ID księgi: "+ownerId;
    $("crest-status").textContent=book.crest?"Herb obecny w księdze":"Brak herbu";
