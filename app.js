@@ -17,10 +17,16 @@
     {id:"midnight",name:"Granat"},
     {id:"chestnut",name:"Brąz"}
   ];
+  const SPINES = [
+    {id:"illuminated",name:"Iluminowany",note:"Złocone filigrany"},
+    {id:"ironbound",name:"Żelazny",note:"Surowe metalowe okucia"},
+    {id:"monastic",name:"Zakonny",note:"Skromne tłoczenia"},
+    {id:"merchant",name:"Kupiecki",note:"Bogaty skórzany kartusz"}
+  ];
   const FIELDS = ["character","subtitle","year","author","summary","story"];
   const DEFAULT = () => ({
     character:"", subtitle:"", year:"1403", author:"", summary:"", story:"",
-    paper:"classic", cover:"burgundy", crest:null, photos:[]
+    paper:"classic", cover:"burgundy", spine:"illuminated", crest:null, photos:[]
   });
   const SAFE_IMAGE = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
   const MAX_IMAGES = 12;
@@ -37,6 +43,7 @@
   const isImage = value => typeof value === "string" && value.length <= 6_000_000 && SAFE_IMAGE.test(value);
   const safeStyle = name => PAPERS.some(x => x.id===name) ? name : "classic";
   const safeCover = name => COVERS.some(x => x.id===name) ? name : "burgundy";
+  const safeSpine = name => SPINES.some(x => x.id===name) ? name : "illuminated";
   const selectedFileName = name => (name||"ksiega-postaci").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/ł/g,"l").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,55) || "ksiega-postaci";
 
   function notify(message){
@@ -52,6 +59,7 @@
     for(const field of FIELDS)if(typeof raw[field]==="string")out[field]=raw[field].slice(0,field==="story"?100000:field==="summary"?700:115);
     out.paper=safeStyle(raw.paper);
     out.cover=safeCover(raw.cover);
+    out.spine=safeSpine(raw.spine);
     if(isImage(raw.crest))out.crest=raw.crest;
     if(Array.isArray(raw.photos))out.photos=raw.photos.slice(0,MAX_IMAGES).filter(x=>x&&isImage(x.data)).map((photo,i)=>({
       id:String(photo.id||("zdjecie-"+i)).slice(0,50),
@@ -97,6 +105,50 @@
     $("cover-options").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{
       state.cover=btn.dataset.cover;
       paperMarkup();updatePreview();saveDraft();
+    }));
+    spineMarkup();
+  }
+  function subtitleLines(value){
+    const words=String(value||"").trim().split(/\s+/).filter(Boolean);
+    if(value.length<=23||words.length<3)return [value];
+    let best=1,min=Infinity;
+    for(let i=1;i<words.length;i++){
+      const first=words.slice(0,i).join(" "),second=words.slice(i).join(" ");
+      const diff=Math.abs(first.length-second.length);
+      if(diff<min){min=diff;best=i}
+    }
+    return [words.slice(0,best).join(" "),words.slice(best).join(" ")];
+  }
+  function spinePreview(item){
+    const title=escapeHtml(plainText(state.character)||"Imię postaci");
+    const subtitle=escapeHtml(plainText(state.subtitle)||"Kronika życia i czynów");
+    const lines=subtitleLines(plainText(state.subtitle)||"Kronika życia i czynów")
+      .map(line=>`<span class="book-spine__subtitle">${escapeHtml(line)}</span>`).join("");
+    const monogram=escapeHtml((plainText(state.character)||"K").charAt(0).toUpperCase());
+    return `<span class="book-spine" data-cover="${safeCover(state.cover)}" data-finish="${item.id}" aria-hidden="true" style="--book-height:245px;--book-width:98px;--tilt:0deg">
+      <span class="book-spine__edge"></span><span class="book-spine__grain"></span>
+      <span class="book-spine__frame"></span>
+      <span class="book-spine__ridges"><span class="book-spine__ridge"></span><span class="book-spine__ridge"></span><span class="book-spine__ridge"></span><span class="book-spine__ridge"></span></span>
+      <span class="book-spine__clasps"><span class="book-spine__clasp"></span><span class="book-spine__clasp"></span></span>
+      <span class="book-spine__finial book-spine__finial--top"></span><span class="book-spine__finial book-spine__finial--bottom"></span>
+      <span class="book-spine__cartouche"><span class="book-spine__rosette">✥</span><span class="book-spine__monogram">${monogram}</span>
+      <span class="book-spine__label"><span class="book-spine__title">${title}</span><span class="book-spine__divider">❦</span>${lines}</span>
+      <span class="book-spine__year">${escapeHtml(plainText(state.year)||"✣")}</span></span></span>`;
+  }
+  function spineMarkup(){
+    const target=$("spine-options");
+    if(!target)return;
+    target.innerHTML=SPINES.map(item=>`<button type="button" class="spine-choice ${state.spine===item.id?"is-selected":""}"
+       data-spine="${item.id}" aria-pressed="${state.spine===item.id}">
+      <span class="spine-choice__stage">${spinePreview(item)}</span>
+      <span class="spine-choice__caption"><strong>${escapeHtml(item.name)}</strong>
+      <span>${escapeHtml(item.note)}</span>
+      ${state.spine===item.id?'<span class="spine-choice__checked">✓ Wybrany</span>':""}</span>
+    </button>`).join("");
+    target.querySelectorAll("[data-spine]").forEach(btn=>btn.addEventListener("click",()=>{
+      state.spine=safeSpine(btn.dataset.spine);
+      spineMarkup();saveDraft();
+      notify("Wybrano grzbiet: "+SPINES.find(x=>x.id===state.spine).name);
     }));
   }
   function renderCrest(){
@@ -320,6 +372,7 @@
         story:state.story,
         paper:state.paper,
         cover:state.cover,
+        spine:state.spine,
         crest:state.crest,
         photos:state.photos.map(p=>({...p}))
       }
@@ -349,6 +402,7 @@
     document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>showTab(btn.dataset.tab)));
     FIELDS.forEach(field=>$(field).addEventListener("input",event=>{
       state[field]=event.target.value; $("save-status").textContent="Trwa zapis…";
+      if(["character","subtitle","year"].includes(field))spineMarkup();
       schedulePreview();saveDraft();
     }));
     $("crest-upload").addEventListener("change",async event=>{
