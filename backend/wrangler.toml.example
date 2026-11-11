@@ -10,9 +10,7 @@ binding = "DB"
 database_name = "ksiegi-graczy-db"
 database_id = "WPISZ_ID_BAZY_D1"
 
-[[r2_buckets]]
-binding = "BOOKS"
-bucket_name = "ksiegi-graczy-books"
+# R2 nie jest potrzebne: książki, zdjęcia i herby przechowuje D1.
 
 [ai]
 binding = "AI"
