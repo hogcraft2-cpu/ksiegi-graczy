@@ -437,7 +437,7 @@
         data=canvas.toDataURL("image/webp",.46);
         if(data.length<=target&&isImage(data))return data;
       }
-      throw Error("Obraz jest za duży, by zapisać go w bezpłatnej bazie. Wybierz mniejszy plik.");
+      throw Error("Obraz jest zbyt duży. Spróbuj dodać mniejszy plik.");
     }finally{URL.revokeObjectURL(url)}
   }
   function maxChars(){
@@ -611,25 +611,27 @@
     notify("Zapisano plik księgi. Można go ponownie wczytać i edytować.");
   }
   async function checkOnline(){
+    // Sprawdzenie dostępności jest niewidoczne dla czytelnika przy poprawnym połączeniu.
     const info=$("online-status");
+    const button=$("publish-online");
+    info.hidden=true;
+    info.textContent="";
     if(!/^https:\/\//.test(API_BASE)&&!/^http:\/\/localhost:\d+$/.test(API_BASE)){
-      info.textContent="Publikacja online wymaga uruchomienia serwera Cloudflare i ustawienia adresu w api-config.js. Możesz już zapisać projekt JSON.";
-      $("publish-online").disabled=true;return;
+      button.disabled=true;
+      info.textContent="Publikacja jest chwilowo niedostępna. Spróbuj ponownie później.";
+      info.hidden=false;
+      return;
     }
     try{
       const response=await fetch(API_BASE+"/api/health",{cache:"no-store"});
       const data=await response.json();
-      if(!response.ok||!data.storage)throw Error("Brak połączenia z bazą danych.");
-      if(!data.adminConfigured)throw Error("Administrator nie skonfigurował jeszcze sekretu ADMIN_SECRET w Cloudflare.");
-      if(!data.githubConfigured)throw Error("Administrator nie skonfigurował jeszcze sekretu GITHUB_TOKEN w Cloudflare.");
-      info.textContent="Serwer GitHub + prywatna D1 jest gotowy. Możesz opublikować księgę z własnym hasłem.";
-      $("publish-online").disabled=false;
+      if(!response.ok||!data.storage||!data.adminConfigured||!data.githubConfigured)throw Error("Usługa publikowania jest niedostępna.");
+      button.disabled=false;
     }catch(err){
-      const corsHint=err instanceof TypeError
-        ?" Możliwa blokada połączenia CORS. W Cloudflare Worker → Settings → Variables and Secrets ustaw ALLOWED_ORIGINS tak, aby zawierało adres: "+location.origin
-        :"";
-      info.textContent="Nie można połączyć z API: "+err.message+"."+corsHint;
-      $("publish-online").disabled=true;
+      console.warn("Nie można sprawdzić gotowości publikacji:",err);
+      button.disabled=true;
+      info.textContent="Publikacja jest chwilowo niedostępna. Spróbuj ponownie później.";
+      info.hidden=false;
     }
   }
   async function publishOnline(){
@@ -640,11 +642,12 @@
     if(new TextEncoder().encode(password).byteLength>4096){notify("Hasło jest za długie do bezpiecznego przetwarzania na serwerze (4096 bajtów).");return}
     if(password!==confirmed){notify("Podane hasła nie są takie same.");return}
     const bytes=estimateOnlineSize(bookForOnline());
-    if(bytes>ONLINE_BOOK_LIMIT){notify("Księga ma "+Math.ceil(bytes/1024)+" KB. Limit publikacji w repozytorium GitHub to 850 KB. Usuń część zdjęć lub zmniejsz je.");return}
+    if(bytes>ONLINE_BOOK_LIMIT){notify("Księga jest zbyt duża do opublikowania. Usuń część ilustracji lub zmniejsz je.");return}
     if(lastPublishedId&&!confirm("Ta księga została już opublikowana. Utworzyć kolejną, osobną kopię?"))return;
     publishing=true;$("publish-online").disabled=true;
     const status=$("online-status");
-    status.textContent="Wysyłanie i zabezpieczanie księgi…";
+    status.hidden=false;
+    status.textContent="Publikowanie księgi…";
     try{
       const response=await fetch(API_BASE+"/api/books",{
         method:"POST",headers:{"Content-Type":"application/json"},
@@ -658,7 +661,7 @@
       $("publish-result").hidden=false;
       $("publish-password").value="";
       $("publish-confirm").value="";
-      status.textContent="Księga została zapisana publicznie na GitHubie; wdrożenie strony może potrwać chwilę. Zachowaj identyfikator i hasło — hasła nie da się odzyskać.";
+      status.textContent="Księga została opublikowana. Zachowaj jej identyfikator i hasło — hasła nie można odzyskać.";
       notify("Opublikowano księgę! Możesz nią zarządzać w osobnym panelu.");
     }catch(err){status.textContent=err.message;notify("Nie udało się opublikować: "+err.message)}
     finally{publishing=false;$("publish-online").disabled=false}
@@ -670,7 +673,7 @@
       const parsed=JSON.parse(await file.text());
       if(parsed?.format!=="ksiegi-graczy/book" || parsed?.version!==1 || !parsed.book || typeof parsed.book!=="object")throw Error("Nieobsługiwany format księgi");
       const result=normalize(parsed.book);
-      // Zachowujemy starsze projekty nawet jeśli przekraczają nowy limit publikacji D1.
+      // Zachowujemy zgodność ze starszymi plikami ksiąg.
       if(!confirm("Wczytać księgę? Zastąpi ona aktualny projekt w przeglądarce."))return;
       state=result;
       closeBook();fillFields();saveDraft();showTab("story");
