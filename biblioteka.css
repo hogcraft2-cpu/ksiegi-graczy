@@ -11,7 +11,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
 .catalog__heading{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:17px}.catalog__heading h2{font:400 clamp(22px,2.5vw,31px)/1.2 'Cinzel',serif;color:#f1d5a5;margin:4px 0 0}.catalog__heading p{margin:0}.catalog__tools{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.catalog__count{color:#a9926f;font:12px 'Cinzel',Georgia,serif}.search-field{display:flex;align-items:center;gap:8px;border:1px solid #806039;background:#251910;padding:0 12px}.search-field span{font-size:27px;color:#d5b685}.search-field input{background:none;border:none;outline:0;color:#f3dcb4;font:16px 'EB Garamond',serif;padding:9px 0;width:218px}.search-field input::placeholder{color:#a99475}.search-field:focus-within{border-color:#e2b674}.search-field input:focus-visible{outline:0}
 .shelves{background:linear-gradient(90deg,#130c07aa,transparent 7%,transparent 93%,#130c07aa),repeating-linear-gradient(90deg,#1b100a 0 50px,#261609 52px 55px),linear-gradient(100deg,#352011,#291910);border:15px solid #4b2c17;border-top-color:#684022;border-bottom-color:#24150c;box-shadow:inset 0 0 0 2px #a17a43,inset 0 0 35px #000b,0 20px 50px #0009;position:relative;min-height:420px;padding:18px 23px 14px}
 .shelves::before,.shelves::after{content:'';position:absolute;inset:9px auto 9px 8px;width:5px;background:linear-gradient(90deg,#6b401f,#25170a);box-shadow:2px 0 10px #0008;pointer-events:none}.shelves::after{left:auto;right:8px;transform:scaleX(-1)}
-.shelf{position:relative;min-height:283px;margin:0 -7px 10px;padding:27px 13px 26px;background:radial-gradient(ellipse at 50% 77%,#9b5d2220,transparent 63%);display:flex;align-items:end;flex-direction:column;justify-content:end}.shelf__books{display:flex;align-items:flex-end;gap:10px;min-height:232px;flex:1;width:100%;overflow-x:auto;scrollbar-color:#805733 #23170f;scrollbar-width:thin;padding:12px 13px 0;justify-content:flex-start}.shelf__ledge{height:20px;flex:none;width:calc(100% + 34px);margin:0 -17px -3px;background:linear-gradient(180deg,#9f6b39 0%,#573418 20%,#39210f 62%,#21140d 95%);border-top:2px solid #c39b5e;border-bottom:3px solid #1b0e08;box-shadow:0 9px 12px #080604a9,0 -6px 14px #0007;position:relative;z-index:1}.shelf__ledge::after{content:'✧ ══════════ ✥ ══════════ ✧';position:absolute;inset:1px 0 auto;text-align:center;color:#b89054;letter-spacing:.3em;font-size:10px;opacity:.6}
+.shelf{position:relative;min-height:354px;margin:0 -7px 10px;padding:13px 13px 16px;background:radial-gradient(ellipse at 50% 77%,#9b5d2220,transparent 63%);display:flex;align-items:end;flex-direction:column;justify-content:end}.shelf__books{display:flex;align-items:flex-end;gap:11px;min-height:319px;flex:1;width:100%;overflow-x:auto;scrollbar-color:#805733 #23170f;scrollbar-width:thin;padding:45px 14px 0;justify-content:flex-start}.shelf__ledge{height:20px;flex:none;width:calc(100% + 34px);margin:0 -17px -3px;background:linear-gradient(180deg,#9f6b39 0%,#573418 20%,#39210f 62%,#21140d 95%);border-top:2px solid #c39b5e;border-bottom:3px solid #1b0e08;box-shadow:0 9px 12px #080604a9,0 -6px 14px #0007;position:relative;z-index:1}.shelf__ledge::after{content:'✧ ══════════ ✥ ══════════ ✧';position:absolute;inset:1px 0 auto;text-align:center;color:#b89054;letter-spacing:.3em;font-size:10px;opacity:.6}
 /* Introligatorskie oprawy: ręcznie tłoczona skóra, mosiądz i pergaminowe etykiety. */
 .book-spine{
   --book-height:245px;--book-width:98px;--tilt:0deg;
@@ -128,7 +128,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
 .book-spine__finial--top{top:8px}
 .book-spine__finial--bottom{bottom:8px;transform:translateX(-50%) rotate(180deg)}
 .book-spine__cartouche{
-  position:absolute;inset:55px 10px 58px;display:flex;flex-direction:column;
+  position:absolute;inset:27px 10px 29px;display:flex;flex-direction:column;
   align-items:center;gap:1px;z-index:3;min-height:0;
   background:linear-gradient(90deg,#140e0bba,#4b3021aa 27%,#24190eae 74%,#140c0abb);
   border:1px solid var(--gilt);
@@ -141,20 +141,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
   content:"";position:absolute;inset:5px 3px;opacity:.45;
   border:1px solid var(--gilt);pointer-events:none;
 }
-.book-spine__rosette{font:15px/1 'Cinzel',Georgia,serif;color:var(--gilt-bright);z-index:1;text-shadow:0 2px #090604;margin-top:1px}
+.book-spine__rosette{position:absolute;top:5px;left:7px;font:15px/1 'Cinzel',Georgia,serif;color:var(--gilt-bright);z-index:1;text-shadow:0 2px #090604}
 .book-spine__monogram{
-  z-index:1;display:grid;place-items:center;flex:none;
-  height:24px;width:24px;border-radius:50%;
+  position:absolute;right:5px;top:3px;z-index:1;display:grid;place-items:center;flex:none;
+  height:21px;width:21px;border-radius:50%;
   color:#332114;font:700 12px/1 'Cinzel',serif;
   background:radial-gradient(circle at 33% 23%,#fff2cb,var(--gilt) 53%,var(--gilt-shadow) 92%);
   border:1px solid #321a0b;
   box-shadow:inset 0 0 0 2px #d6b57a5c,0 1px 2px #0009;
-  margin-top:1px;
+  margin-top:0;
 }
 .book-spine__label{
   display:flex;flex-direction:row;align-items:center;justify-content:center;
-  gap:3px;position:relative;z-index:1;
-  flex:1;min-height:0;max-height:100%;width:100%;
+  gap:3px;position:absolute;z-index:1;top:28px;bottom:21px;left:3px;right:3px;
+  min-height:0;max-height:none;width:auto;
   padding:2px 0 1px;overflow:hidden;
 }
 .book-spine__title,.book-spine__subtitle{
@@ -167,7 +167,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
 }
 .book-spine__title{
   color:#f6e2b7;
-  font:600 12px/1.12 'Cinzel',Georgia,serif;
+  font:600 11.5px/1.12 'Cinzel',Georgia,serif;
   letter-spacing:.018em;
   flex:0 1 auto;
 }
@@ -183,7 +183,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;background:ra
   color:var(--gilt-bright);opacity:.88;
   flex:none;text-shadow:0 0 3px #000;
 }
-.book-spine__year{
+ .book-spine__year{
+  position:absolute;left:50%;bottom:2px;transform:translateX(-50%);
   color:#edcf91;
   z-index:1;
   background:linear-gradient(90deg,#150c09c9,#593d20 50%,#180d09c9);
