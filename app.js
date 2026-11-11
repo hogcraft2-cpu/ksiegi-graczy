@@ -4,6 +4,8 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const KEY = "ksiegi-graczy-skryptorium-v1";
+  const API_BASE=String(window.KSIEGI_API_BASE||"").trim().replace(/\/+$/,"");
+  let publishing=false, lastPublishedId="";
   const PAPERS = [
     {id:"classic",name:"Pergamin klasyczny",description:"Stary, ciepły pergamin"},
     {id:"royal",name:"Królewski iluminowany",description:"Złoto i rubinowe ramy"},
@@ -358,24 +360,20 @@
       busy=false;renderSpread();
     },460);
   }
+  function bookForOnline(){
+    return {
+      character:state.character,subtitle:state.subtitle,year:state.year,
+      author:state.author,summary:state.summary,story:state.story,
+      paper:state.paper,cover:state.cover,spine:state.spine,
+      crest:state.crest,photos:state.photos.map(photo=>({...photo}))
+    };
+  }
   function exportBook(){
     const pack={
       format:"ksiegi-graczy/book",
       version:1,
       savedAt:new Date().toISOString(),
-      book:{
-        character:state.character,
-        subtitle:state.subtitle,
-        year:state.year,
-        author:state.author,
-        summary:state.summary,
-        story:state.story,
-        paper:state.paper,
-        cover:state.cover,
-        spine:state.spine,
-        crest:state.crest,
-        photos:state.photos.map(p=>({...p}))
-      }
+      book:bookForOnline()
     };
     const blob=new Blob([JSON.stringify(pack,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
@@ -383,7 +381,51 @@
     a.href=url;a.download=selectedFileName(state.character)+".ksiega.json";
     document.body.append(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1200);
-    notify("Zapisano plik księgi. Będzie można go wykorzystać w przyszłej bibliotece.");
+    notify("Zapisano plik księgi. Można go ponownie wczytać i edytować.");
+  }
+  async function checkOnline(){
+    const info=$("online-status");
+    if(!/^https:\/\//.test(API_BASE)&&!/^http:\/\/localhost:\d+$/.test(API_BASE)){
+      info.textContent="Publikacja online wymaga uruchomienia serwera Cloudflare i ustawienia adresu w api-config.js. Możesz już zapisać projekt JSON.";
+      $("publish-online").disabled=true;return;
+    }
+    try{
+      const response=await fetch(API_BASE+"/api/health",{cache:"no-store"});
+      const data=await response.json();
+      if(!response.ok||!data.storage)throw Error("Brak połączenia z bazą danych.");
+      info.textContent="Serwer online jest gotowy. Możesz opublikować księgę z własnym hasłem.";
+      $("publish-online").disabled=false;
+    }catch(err){
+      info.textContent="Serwer ksiąg nie odpowiada: "+err.message;
+      $("publish-online").disabled=true;
+    }
+  }
+  async function publishOnline(){
+    if(publishing)return;
+    const password=$("publish-password").value,confirmed=$("publish-confirm").value;
+    if(!state.character.trim()||!state.story.trim()){notify("Przed publikacją wpisz imię postaci i jej historię.");return}
+    if(password.length<12||password.length>128){notify("Hasło musi zawierać od 12 do 128 znaków.");return}
+    if(password!==confirmed){notify("Podane hasła nie są takie same.");return}
+    if(lastPublishedId&&!confirm("Ta księga została już opublikowana. Utworzyć kolejną, osobną kopię?"))return;
+    publishing=true;$("publish-online").disabled=true;
+    const status=$("online-status");
+    status.textContent="Wysyłanie i zabezpieczanie księgi…";
+    try{
+      const response=await fetch(API_BASE+"/api/books",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({password,book:bookForOnline()})
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw Error(result.error||"Publikacja nie powiodła się.");
+      lastPublishedId=result.id;
+      $("published-id").textContent=result.id;
+      $("publish-result").hidden=false;
+      $("publish-password").value="";
+      $("publish-confirm").value="";
+      status.textContent="Księga jest dostępna w bibliotece. Zachowaj identyfikator i hasło — hasła nie da się odzyskać.";
+      notify("Opublikowano księgę! Możesz nią zarządzać w osobnym panelu.");
+    }catch(err){status.textContent=err.message;notify("Nie udało się opublikować: "+err.message)}
+    finally{publishing=false;$("publish-online").disabled=false}
   }
   async function importBook(file){
     if(!file)return;
@@ -430,6 +472,7 @@
     $("prev-page").addEventListener("click",()=>turn(-1));
     $("reset-preview").addEventListener("click",closeBook);
     $("save-json").addEventListener("click",exportBook);
+    $("publish-online").addEventListener("click",publishOnline);
     $("load-json").addEventListener("change",event=>{
       const file=event.target.files?.[0];event.target.value="";
       importBook(file);
@@ -451,5 +494,5 @@
       resizeTimer=setTimeout(()=>{if(!busy)renderSpread()},180);
     });
   }
-  loadDraft();wire();fillFields();showTab("story");updateControls();
+  loadDraft();wire();fillFields();showTab("story");updateControls();checkOnline();
 })();
