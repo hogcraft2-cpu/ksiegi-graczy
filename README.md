@@ -1,3 +1,15 @@
+## Gotowa biblioteka ilustracji (20 scen)
+
+Zakładka **03 Obrazy** w kreatorze zawiera wspólną kolekcję **20 gotowych iluminacji** (pierwsza i druga partia po 10), w tym sceny z kuźni, wędrówek, życia codziennego, treningu łuczniczego, targu i skryptorium.
+
+Przycisk **Wyświetl bibliotekę ilustracji** rozwija listę, która **domyślnie jest zwinięta**. Rozwinięta galeria oferuje wyszukiwanie i filtrowanie kategorii, po wybraniu obrazu można ustawić **numer karty (1–500)**, **położenie (góra / środek / dół / osobna karta)**, **rozmiar** i **podpis**. W książce może być do 12 wstawionych obrazów. Te same ustawienia są używane w podglądzie i czytniku publicznej biblioteki.
+
+Pliki scen: `assets/scenes/scene-01.webp` — `scene-20.webp`; lista i kategorie: `assets/scenes/catalog.json`. Obrazy są współdzielonymi plikami, a księgi odwołują się do ich ścieżek — unika to duplikacji w historii GitHuba.
+
+**Ważne:** aby Cloudflare Worker zaakceptował nową drugą partię podczas publikowania ksiąg, ręcznie wgraj najnowszy `backend/worker.js` przez **Cloudflare → Workers & Pages → ksiegi-graczy-api → Edit code → Deploy**. Frontend Cloudflare Pages wdroży się automatycznie, jeżeli repozytorium jest podłączone do automatycznego publikowania z gałęzi `main`.
+
+---
+
 ## Hosting strony na Cloudflare Pages
 
 **Cloudflare Worker nie jest stroną WWW.** Worker `ksiegi-graczy-api.hogcraft2.workers.dev` udostępnia tylko API. Kreator, biblioteka i panel zarządzania powinny być wdrożone jako osobny projekt **Cloudflare Pages**, podłączony do tego samego publicznego repozytorium GitHub.
