@@ -89,6 +89,46 @@
    $("owner-login").hidden=false;$("owner-editor").hidden=true;
    $("owner-password").value="";$("generated-preview").hidden=true;
  }
+ async function searchBooks(){
+   const query=$("book-search").value.trim().toLocaleLowerCase("pl");
+   const target=$("found-books");target.replaceChildren();
+   const info=document.createElement("p");
+   info.textContent="Szukam opublikowanych ksiąg…";target.append(info);
+   try{
+     const response=await api("/api/books");
+     const books=(Array.isArray(response.books)?response.books:[])
+       .filter(item=>typeof item.id==="string"&&/^[a-f\\d-]{36}$/i.test(item.id))
+       .filter(item=>(String(item.title||"")+" "+String(item.subtitle||"")).toLocaleLowerCase("pl").includes(query))
+       .slice(0,35);
+     target.replaceChildren();
+     if(!books.length){
+       info.textContent="Nie znaleziono księgi. Upewnij się, że została opublikowana online z hasłem.";
+       target.append(info);return;
+     }
+     for(const item of books){
+       const button=document.createElement("button");
+       button.type="button";button.className="book-finder__item";
+       const title=document.createElement("strong");
+       title.textContent=item.title||"Kronika bez tytułu";
+       const subtitle=document.createElement("span");
+       subtitle.textContent=item.subtitle||"";
+       const ident=document.createElement("code");
+       ident.textContent=item.id;
+       button.append(title,subtitle,ident);
+       button.addEventListener("click",()=>{
+         $("owner-id").value=item.id;
+         target.replaceChildren();
+         info.textContent="Wybrano księgę: "+(item.title||"Kronika")+". Teraz wpisz jej hasło.";
+         target.append(info);
+         $("owner-password").focus();
+       });
+       target.append(button);
+     }
+   }catch(error){
+     info.textContent="Nie udało się pobrać listy ksiąg: "+error.message;
+     target.replaceChildren();target.append(info);
+   }
+ }
  async function ownerOpen(event){
    event.preventDefault();
    try{
@@ -110,7 +150,7 @@
      if(!ownerId||!ownerPass)throw Error("Najpierw odblokuj księgę.");
      const updated=getBookFromForm();
      const size=new TextEncoder().encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book:updated})).length;
-     if(size>1_500_000)throw Error("Księga przekracza limit 1,5 MB D1. Usuń lub zmniejsz część ilustracji.");
+     if(size>850_000)throw Error("Księga przekracza limit 850 KB pliku GitHub. Usuń lub zmniejsz część ilustracji.");
      feedback("Zapisuję kronikę na serwerze…");
      await api("/api/books/"+encodeURIComponent(ownerId),{method:"PUT",body:{password:ownerPass,book:updated}});
      book=updated;
@@ -130,7 +170,8 @@
  }
  async function changePassword(){
    const fresh=$("new-password").value;
-   if(fresh.length<12){feedback("Hasło musi mieć co najmniej 12 znaków.",true);return}
+   if(!fresh){feedback("Wpisz nowe hasło.",true);return}
+   if(new TextEncoder().encode(fresh).byteLength>4096){feedback("Hasło przekracza techniczny limit 4096 bajtów.",true);return}
    if(!confirm("Zmienić hasło do tej księgi? Poprzednie hasło przestanie działać."))return;
    try{
      await api("/api/books/"+encodeURIComponent(ownerId)+"/password",{method:"POST",body:{password:ownerPass,newPassword:fresh}});
@@ -280,6 +321,15 @@
  function init(){
    document.querySelectorAll("[data-view]").forEach(btn=>btn.addEventListener("click",()=>show(btn.dataset.view)));
    $("owner-form").addEventListener("submit",ownerOpen);
+   $("search-books").addEventListener("click",searchBooks);
+   $("book-search").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();searchBooks()}});
+   const requested=new URLSearchParams(location.search).get("book");
+   if(requested&&/^[a-f\\d-]{36}$/i.test(requested)){
+     $("owner-id").value=requested;
+     const hint=document.createElement("p");
+     hint.textContent="Identyfikator został wypełniony automatycznie. Wpisz hasło właściciela.";
+     $("found-books").append(hint);
+   }
    $("admin-form").addEventListener("submit",adminLogin);
    $("save-edits").addEventListener("click",saveEdits);
    $("leave-editor").addEventListener("click",()=>{clearLogin();feedback("Zamknięto edytor.")});
