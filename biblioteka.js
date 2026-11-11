@@ -48,7 +48,7 @@
       const response=await fetch("./books/catalog.json",{cache:"no-store"});
       if(!response.ok)throw Error("HTTP "+response.status);
       staticItems=normalizeCatalog(await response.json());
-    }catch(error){errors.push("Pliki GitHub: "+error.message)}
+    }catch(error){errors.push("Nie udało się pobrać katalogu");console.warn("Katalog ksiąg:",error)}
     if(API_READY){
       try{
         const response=await fetch(API_BASE+"/api/books",{cache:"no-store"});
@@ -63,7 +63,7 @@
           spine:SPINES.includes(book.spine)?book.spine:"illuminated",
           frame:FRAMES.includes(book.frame)?book.frame:"plain"
         }));
-      }catch(error){errors.push("Serwer ksiąg: "+error.message)}
+      }catch(error){errors.push("Nie udało się pobrać najnowszych ksiąg");console.warn("Nowe księgi:",error)}
     }
     // Ta sama księga może być widoczna równocześnie w GitHub Pages i w świeżym API.
     // API ma pierwszeństwo, więc na półce nie pojawiają się duble.
@@ -71,7 +71,7 @@
     if(library.length)filterBooks();
     else{
       $("shelves").replaceChildren();
-      showEmpty(errors.length?"Nie udało się wczytać katalogu: "+errors.join("; "):"Nie opublikowano jeszcze ksiąg.");
+      showEmpty(errors.length?"Nie udało się wczytać biblioteki. Odśwież stronę i spróbuj ponownie.":"Nie opublikowano jeszcze ksiąg.");
       $("book-count").textContent="0 ksiąg w zbiorach";
     }
     if(errors.length)console.warn("Niektóre źródła ksiąg są niedostępne:",errors);
