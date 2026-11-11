@@ -320,14 +320,30 @@ async function handle(request,env){
  if(path==="/api/admin/list"&&request.method==="POST"){
    const data=await bodyJSON(request);await checkAdmin(request,env,data.adminPassword);
    const rows=await env.DB.prepare("SELECT id,title,subtitle,year,cover,paper,spine,published,created_at,updated_at FROM books ORDER BY created_at DESC LIMIT 500").all();
-   return result(request,env,{books:(rows.results||[]).map(row=>({...publicRow(row),published:!!row.published,createdAt:row.created_at}))});
+   const managed=(rows.results||[]).map(row=>({...publicRow(row),published:!!row.published,createdAt:row.created_at,static:false}));
+   const managedIds=new Set(managed.map(item=>item.id));
+   const catalog=await githubFetch(env,GITHUB_CATALOG);
+   const legacy=(catalog.data.books||[]).filter(item=>!managedIds.has(item.id)&&typeof item.id==="string")
+     .filter(item=>/^[a-z0-9][a-z0-9-]{2,70}$/.test(item.id)&&item.file==="books/"+item.id+".json")
+     .map(item=>({id:item.id,title:clean(item.title,85),subtitle:clean(item.subtitle,110),
+       year:clean(item.year,30),cover:item.cover,paper:item.paper,spine:item.spine,published:true,static:true}));
+   return result(request,env,{books:[...managed,...legacy]});
  }
  if(path==="/api/admin/delete"&&request.method==="POST"){
    const data=await bodyJSON(request);await checkAdmin(request,env,data.adminPassword);
-   const id=clean(data.id,64);
-   if(!ID_RE.test(id))throw new ApiError(400,"Niepoprawny identyfikator księgi.");
-   if(!await getRow(env,id))throw new ApiError(404,"Księga nie istnieje.");
-   await deleteBook(env,id);
+   const id=clean(data.id,72);
+   if(ID_RE.test(id)){
+     if(!await getRow(env,id))throw new ApiError(404,"Księga nie istnieje.");
+     await deleteBook(env,id);
+   }else{
+     // Starsza książka publiczna, np. Vojtiech Havel: brak konta w D1.
+     if(!/^[a-z0-9][a-z0-9-]{2,70}$/.test(id))throw new ApiError(400,"Niepoprawny identyfikator księgi.");
+     const catalog=await githubFetch(env,GITHUB_CATALOG);
+     const found=(catalog.data.books||[]).find(item=>item.id===id&&item.file==="books/"+id+".json");
+     if(!found)throw new ApiError(404,"Księgi nie znaleziono w publicznym katalogu.");
+     await updateCatalog(env,id,null);
+     await githubDelete(env,found.file);
+   }
    return result(request,env,{ok:true,deleted:id,by:"admin"});
  }
  if(path==="/api/admin/publish"&&request.method==="POST"){
