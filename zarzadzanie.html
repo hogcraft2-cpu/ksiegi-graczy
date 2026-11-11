@@ -19,8 +19,8 @@
   <section class="intro">
     <p class="eyebrow">PRYWATNA PRACOWNIA KRONIKARZA</p>
     <h2>Opieka nad <em>rękopisami</em></h2>
-    <p>Każda księga może mieć własne hasło. Tylko jej właściciel może zmieniać treść albo ją usunąć; administrator może zarządzać wszystkimi księgami. Hasła nie są zapisywane w przeglądarce.</p>
-    <p class="api-message" id="api-message" role="status">Sprawdzanie połączenia z serwerem ksiąg…</p>
+    <p>Odszukaj swoją księgę, otwórz ją hasłem i zmień jej historię, ilustracje lub oprawę. Administrator może zarządzać całą biblioteką.</p>
+    
   </section>
   <div class="switcher" role="group" aria-label="Wybierz panel">
     <button class="switcher__button is-active" data-view="owner" type="button">✒ Moja księga</button>
@@ -64,16 +64,16 @@
         <label class="file-label">Dodaj własne ilustracje<input id="edit-images" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>
         <div id="edit-images-list" class="image-grid"></div>
       </div>
-      <div class="subpanel">
+      <div class="subpanel" hidden>
         <h4>Ilustrator kroniki · rok 1400</h4>
         <p>Opisz scenę z historii: miejsce, postacie, ubiór i wydarzenie. Sztuczna inteligencja spróbuje przedstawić ją jako iluminowaną rycinę z początku XV wieku.</p>
         <label>Scena do zilustrowania<textarea id="scene-prompt" rows="4" maxlength="650" placeholder="Np. Młody giermek przed bramą zamku w zimowy poranek, obok koń i rycerz w zbroi…"></textarea></label>
         <div class="actions"><button type="button" id="suggest-scene" class="button">Użyj fragmentu historii</button><button type="button" id="generate-image" class="button button--gold">✦ Wygeneruj ilustrację</button></div>
-        <div class="generated" id="generated-preview" hidden><img id="generated-image" alt="Wygenerowana ilustracja w stylu roku 1400"><div><button type="button" class="button" id="attach-image">Dodaj do księgi</button><small>Po dodaniu wybierz „Zapisz zmiany online”.</small></div></div>
-        <p class="note">Generator wymaga połączenia z Cloudflare Workers AI. Limit wynosi 3 obrazy dziennie na jedną księgę; wygenerowana scena może zawierać nieścisłości historyczne.</p>
+        <div class="generated" id="generated-preview" hidden><img id="generated-image" alt="Wygenerowana ilustracja w stylu roku 1400"><div><button type="button" class="button" id="attach-image">Dodaj do księgi</button><small>Po dodaniu zapisz zmiany w księdze.</small></div></div>
+        <p class="note">Wygenerowane obrazy mogą zawierać nieścisłości historyczne.</p>
       </div>
       <div class="actions">
-        <button type="button" id="save-edits" class="button button--gold">Zapisz zmiany online</button>
+        <button type="button" id="save-edits" class="button button--gold">Zapisz zmiany</button>
         <button type="button" id="leave-editor" class="button">Zamknij edytor</button>
       </div>
       <div class="subpanel subpanel--danger">
@@ -95,5 +95,5 @@
   </section>
   <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
 </main>
-<footer>✥ &nbsp; Skryptorium — kroniki graczy · Wszystkie operacje administracyjne wymagają weryfikacji na serwerze.</footer>
+<footer>✥ &nbsp; Skryptorium — kroniki graczy</footer>
 </body></html>
