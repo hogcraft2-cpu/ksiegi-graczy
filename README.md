@@ -1,3 +1,62 @@
+# Bezpieczne zarządzanie księgami i generator iluminacji
+
+**Status:** kod API, kreatora i panelu zarządzania jest w repozytorium. Funkcje serwerowe zaczną działać dopiero po uruchomieniu Cloudflare Worker i skonfigurowaniu D1, R2 oraz AI. Publiczny GitHub Pages **nie przechowuje i nie weryfikuje haseł**.
+
+### Strony
+
+- **Kreator:** https://hogcraft2-cpu.github.io/ksiegi-graczy/
+- **Biblioteka:** https://hogcraft2-cpu.github.io/ksiegi-graczy/biblioteka.html
+- **Panel właściciela i administratora:** https://hogcraft2-cpu.github.io/ksiegi-graczy/zarzadzanie.html
+
+### Funkcje
+
+- Każdy gracz może opublikować nową kronikę z **indywidualnym hasłem** o długości 12–128 znaków. Hasło nigdy nie trafia do katalogu, pliku książki ani publicznego skryptu; baza D1 zapisuje jedynie losową sól i hash PBKDF2-SHA256.
+- Po publikacji serwer zwraca **identyfikator UUID**. Do późniejszej edycji/usuwania należy zachować zarówno UUID, jak i hasło.
+- Pod adresem `zarzadzanie.html` gracz wczytuje własną książkę, może modyfikować historię i zdjęcia, wybór pergaminu i grzbietu, zmienić hasło lub nieodwracalnie usunąć książkę.
+- **Administrator** wpisuje osobne hasło zapisane jako sekret Workera i może wyświetlić listę, ukryć, przywrócić albo usunąć **dowolną książkę zarządzaną przez API** bez znajomości hasła właściciela.
+- **Ilustrator AI** na podstawie opisu sceny tworzy ilustrację nawiązującą do Czech około 1400 roku (iluminowany rękopis, strój i architektura epoki). Właściciel może dodać obraz do książki, a następnie zapisać zmiany online. Limit 3 próby/dzień/księgę; wymaga Workers AI.
+- Publiczna biblioteka pobiera **opublikowane** książki z API oraz dotychczasowe statyczne przykłady. Wszystko otwiera się w miejscu bez zmiany URL.
+- Serwer ogranicza próby odgadywania haseł i nowe publikacje do 3/dobę/adres. Nie jest to zamiennik dodatkowych zabezpieczeń antyspamowych przy większym ruchu.
+
+**Ważne:** dotychczasowa statyczna księga Vojtiecha jest przykładem w `books/catalog.json`, a nie rekordem D1. Administrator może ją usunąć poprzez repozytorium GitHub; panel administracyjny zarządza dopiero nowymi książkami opublikowanymi przez Cloudflare API. Aby także Vojtiech był zarządzany hasłem, trzeba go osobno przenieść do bazy.
+
+### Jak uruchomić zaplecze w Cloudflare
+
+Zarówno GitHub Pages, jak i Cloudflare Pages są tylko frontendem. Konieczne jest jednorazowe wdrożenie API w **Workers** oraz podpięcie usług. Poniżej przykładowe komendy z terminala mającego Node.js i zalogowane `npx wrangler login`.
+
+1. Pobierz repozytorium, otwórz katalog `backend`. Skopiuj plik `wrangler.toml.example` do `wrangler.toml`.
+2. Utwórz bazę: `npx wrangler d1 create ksiegi-graczy-db`. Wklej zwrócone `database_id` do `backend/wrangler.toml`.
+3. Utwórz magazyn: `npx wrangler r2 bucket create ksiegi-graczy-books`. R2 może wymagać aktywacji usługi i metody płatności w panelu Cloudflare, mimo dostępnych limitów bezpłatnych.
+4. Zainicjuj tabele: `npx wrangler d1 execute ksiegi-graczy-db --remote --file=./schema.sql`.
+5. Ustaw dwa **sekrety Workera**, nie w repozytorium: `npx wrangler secret put ADMIN_SECRET` (unikatowe silne hasło administratora, co najmniej 16 znaków) oraz `npx wrangler secret put RATE_SALT` (losowy długi ciąg znaków). Nie wklejaj tych sekretów w rozmowę ani do kodu GitHub.
+6. W `wrangler.toml` ustaw `ALLOWED_ORIGINS`: adres frontendu, np. `https://hogcraft2-cpu.github.io`. Gdy używasz także innej domeny, oddzielaj adresy przecinkami.
+7. Wdróż API: `npx wrangler deploy`. Skopiuj otrzymany adres `https://ksiegi-graczy-api.TWOJE-KONTO.workers.dev`.
+8. W pliku repozytorium `api-config.js` wpisz **tylko publiczny adres Workera** w `window.KSIEGI_API_BASE`. Nie wstawiaj tam haseł ani tokenów.
+9. Odśwież kreator i otwórz panel `zarzadzanie.html`. Status powinien pokazywać aktywne połączenie z D1/R2. Wygenerowanie obrazu wymaga prawidłowej konfiguracji bindingu `AI` w Workerze.
+
+**Uwaga o kolejności sekretów:** przy pierwszym wdrożeniu (zanim Worker istnieje), jeśli `wrangler secret put` nie znajduje jeszcze projektu, wykonaj najpierw `npx wrangler deploy`, następnie ustaw sekrety i wdróż ponownie.
+
+Przykładowe ustawienia bindings znajdują się w `backend/wrangler.toml.example`. Po utworzeniu kopii możesz edytować tylko `database_id`; nazwy `DB`, `BOOKS`, `AI` muszą pozostać zgodne z kodem.
+
+### Koszty i bezpieczeństwo
+
+- Cloudflare D1 jest dostępne na darmowym planie (w granicach limitów).
+- Cloudflare R2 ma bezpłatny miesięczny limit, po jego przekroczeniu mogą wystąpić opłaty; samo włączenie usługi może wymagać danych rozliczeniowych.
+- Workers AI ma ograniczoną darmową pulę. Generowanie ilustracji może zużywać tę pulę lub być płatne po przekroczeniu limitu. Nie obiecujemy nieograniczonego darmowego generowania.
+- Hasła i zasoby są wrażliwe: włącz 2FA w Cloudflare, ustaw limity, monitoruj zużycie i regularnie wykonuj kopie D1/R2.
+- Obrazy AI nie gwarantują poprawności historycznej.
+- Jeżeli zapomnisz hasła księgi, użytkownik nie odzyska go automatycznie. Administrator może w razie potrzeby usunąć księgę.
+
+### Struktura nowych plików
+
+- `zarzadzanie.html`, `panel.css`, `panel.js` — panel właściciela i administratora.
+- `api-config.js` — tylko publiczny adres API, domyślnie pusty.
+- `backend/worker.js` — API autoryzacji, zapisu i ilustratora.
+- `backend/schema.sql` — schemat bazy D1.
+- `backend/wrangler.toml.example` — wzorzec konfiguracji Cloudflare, bez sekretów.
+
+---
+
 # Skryptorium — Kreator Ksiąg i Biblioteka Postaci
 
 Dwa niezależne widoki w jednym publicznym repozytorium, stworzone dla społeczności Kingdom Come: Deliverance II RP.
