@@ -102,8 +102,15 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
 
         <section class="edit-panel" id="panel-images" data-panel="images" hidden>
           <div class="section-heading">✥ &nbsp; Iluminacje z roku 1400</div>
-          <h2>Galeria gotowych ilustracji</h2>
-          <p class="description">Wybierz malowaną scenę, a następnie wskaż numer karty i miejsce, w którym ma się pojawić. Obrazy możesz później dowolnie przestawiać.</p>
+          <h2>Ilustracje do Twojej księgi</h2>
+          <p class="description">Rozwiń bibliotekę, aby wybrać gotową iluminację. Następnie wskaż kartę, umiejscowienie i rozmiar obrazu.</p>
+          <details class="scene-library" id="scene-library">
+            <summary class="scene-library__toggle">
+              <span class="scene-library__symbol" aria-hidden="true">❦</span>
+              <span class="scene-library__labels"><strong class="scene-library__closed">Wyświetl bibliotekę ilustracji</strong><strong class="scene-library__opened">Zwiń bibliotekę ilustracji</strong><small><span id="scene-total">20</span> malowanych scen w zbiorach</small></span>
+              <span class="scene-library__chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="scene-library__body">
           <div class="scene-filters">
             <label for="scene-search">Szukaj sceny<input id="scene-search" type="search" placeholder="Np. kowal, miecz, las" autocomplete="off"></label>
             <label for="scene-category">Rodzaj sceny<select id="scene-category"><option value="">Wszystkie</option></select></label>
@@ -111,7 +118,9 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
           <div class="scene-gallery" id="scene-gallery" role="group" aria-label="Wybierz ilustrację z galerii">
             <p class="hint">Wczytywanie galerii ilustracji…</p>
           </div>
-          <p class="scene-selected" id="scene-selected" role="status">Wybierz malowaną scenę z galerii.</p>
+            </div>
+          </details>
+          <p class="scene-selected" id="scene-selected" role="status">Rozwiń bibliotekę i wybierz ilustrację do wstawienia.</p>
           <div class="scene-placement">
             <h3>Wstaw wybraną ilustrację</h3>
             <div class="scene-placement__fields">
