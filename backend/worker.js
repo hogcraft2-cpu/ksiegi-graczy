@@ -20,6 +20,9 @@ const PAPERS=["classic","royal","battle","monastery","nocturne","vellum","marble
 const COVERS=["burgundy","forest","midnight","chestnut","oxblood","ivory","obsidian","violet","teal","copper","ochre","slate"];
 const FRAMES=["plain","filigree","gothic","heraldic","vines","royal","scribal"];
 const DATA_IMAGE=/^data:image\/(png|jpeg|webp);base64,[a-z\d+/=]+$/i;
+const PRESET_IMAGE=/^assets\/scenes\/scene-(?:0[1-9]|10)\.webp$/;
+const PHOTO_POSITIONS=["top","middle","bottom","full"];
+const PHOTO_SIZES=["small","medium","large"];
 const ID_RE=/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/;
 const today=()=>new Date().toISOString().slice(0,10);
 const timestamp=()=>new Date().toISOString();
@@ -103,8 +106,13 @@ function validateBook(raw){
  }
  if(raw.photos!==undefined&&!Array.isArray(raw.photos))throw new ApiError(422,"Nieprawidłowe ilustracje.");
  for(const photo of (raw.photos||[]).slice(0,12)){
-   if(!photo||typeof photo!=="object"||typeof photo.data!=="string"||photo.data.length>IMAGE_LIMIT||!DATA_IMAGE.test(photo.data))throw new ApiError(422,"Jeden z obrazów jest zbyt duży lub ma niepoprawny format.");
-   book.photos.push({id:clean(photo.id,50)||crypto.randomUUID(),data:photo.data,caption:clean(photo.caption,160)});
+   if(!photo||typeof photo!=="object"||typeof photo.data!=="string"||photo.data.length>IMAGE_LIMIT||
+       !(DATA_IMAGE.test(photo.data)||PRESET_IMAGE.test(photo.data)))
+     throw new ApiError(422,"Ilustracja ma niepoprawny format lub przekracza dopuszczalny rozmiar.");
+   const page=Number.isInteger(photo.page)&&photo.page>=1&&photo.page<=500?photo.page:null;
+   const position=PHOTO_POSITIONS.includes(photo.position)?photo.position:"middle";
+   const size=PHOTO_SIZES.includes(photo.size)?photo.size:"medium";
+   book.photos.push({id:clean(photo.id,50)||crypto.randomUUID(),data:photo.data,caption:clean(photo.caption,160),page,position,size});
  }
  if(encoder.encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book})).length>BOOK_LIMIT)throw new ApiError(413,"Księga przekracza limit 850 KB dla pliku na GitHubie. Usuń część ilustracji lub zmniejsz ich rozmiar.");
  return book;
