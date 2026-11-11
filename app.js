@@ -415,7 +415,10 @@
       info.textContent="Serwer GitHub + prywatna D1 jest gotowy. Możesz opublikować księgę z własnym hasłem.";
       $("publish-online").disabled=false;
     }catch(err){
-      info.textContent="Serwer ksiąg nie odpowiada: "+err.message;
+      const corsHint=err instanceof TypeError
+        ?" Możliwa blokada połączenia CORS. W Cloudflare Worker → Settings → Variables and Secrets ustaw ALLOWED_ORIGINS tak, aby zawierało adres: "+location.origin
+        :"";
+      info.textContent="Nie można połączyć z API: "+err.message+"."+corsHint;
       $("publish-online").disabled=true;
     }
   }
