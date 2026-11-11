@@ -1,3 +1,32 @@
+## Hosting strony na Cloudflare Pages
+
+**Cloudflare Worker nie jest stroną WWW.** Worker `ksiegi-graczy-api.hogcraft2.workers.dev` udostępnia tylko API. Kreator, biblioteka i panel zarządzania powinny być wdrożone jako osobny projekt **Cloudflare Pages**, podłączony do tego samego publicznego repozytorium GitHub.
+
+Aby uruchomić Pages, w Cloudflare Dashboard przejdź do **Workers & Pages → Create application → Pages → Connect to Git / Import an existing Git repository**. Wybierz `hogcraft2-cpu/ksiegi-graczy` i ustaw:
+
+| Ustawienie | Wartość |
+| --- | --- |
+| Project name | np. `skryptorium-ksiegi` (jeśli nazwa jest dostępna) |
+| Production branch | `main` |
+| Framework preset | `None` |
+| Root directory | `/` (główny katalog repozytorium) |
+| Build command | `bash cloudflare-pages-build.sh` |
+| Build output directory | `dist` |
+
+Skrypt budowania publikuje wyłącznie pliki frontendu i publiczne `books/`. Kod `backend/worker.js` i konfiguracja Workera nie są publikowane w Pages. Publicznego adresu Pages **nie da się ustalić przed utworzeniem projektu** — Cloudflare pokaże go po pierwszym Deploy, np. `https://skryptorium-ksiegi.pages.dev` (przykład, nie jest gwarantowany).
+
+**Ważne dla działania haseł:** w ustawieniach API Workera, `Settings → Variables and Secrets`, dodaj albo zaktualizuj zwykłą zmienną `ALLOWED_ORIGINS` dokładnym adresem **pochodzenia strony Pages**, np. `https://skryptorium-ksiegi.pages.dev`. Jeżeli chcesz zostawić również dotychczasowy adres GitHub Pages, podaj oba adresy oddzielone przecinkiem. Nie dodawaj końcowego ukośnika ani ścieżki. Następnie zatwierdź Deploy.
+
+Po wdrożeniu sprawdź **trzy adresy w obrębie domeny Pages**:
+
+- `https://TWOJ-PROJEKT.pages.dev/` — kreator;
+- `https://TWOJ-PROJEKT.pages.dev/biblioteka.html` — biblioteka;
+- `https://TWOJ-PROJEKT.pages.dev/zarzadzanie.html` — panel właściciela i administratora.
+
+Wszystkie linki nawigacyjne między tymi ekranami są względne, więc pozostaną w domenie Cloudflare Pages, a nie przeniosą gracza na GitHub Pages. Github pozostaje wyłącznie magazynem publicznych ksiąg.
+
+---
+
 # Skryptorium — Kreator i Biblioteka Ksiąg Graczy
 
 Publiczna średniowieczna biblioteka postaci oraz kreator ksiąg w stylu Kingdom Come: Deliverance II RP.
