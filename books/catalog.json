@@ -3,16 +3,6 @@
   "description": "Katalog publicznych ksiąg Skryptorium. Plik wskazuje wyłącznie opublikowane księgi.",
   "books": [
     {
-      "id": "51d902ee-ef80-445f-8069-9b2844194747",
-      "file": "books/51d902ee-ef80-445f-8069-9b2844194747.json",
-      "title": "EWAEWQEQW",
-      "subtitle": "",
-      "year": "1403",
-      "cover": "burgundy",
-      "paper": "classic",
-      "spine": "illuminated"
-    },
-    {
       "id": "vojtiech-havel",
       "file": "books/vojtiech-havel.json",
       "title": "Vojtiech Havel",
