@@ -194,8 +194,8 @@
     FIELDS.forEach(key=>$(key).value=state[key]||"");
     renderCrest();paperMarkup();photoMarkup();updatePreview();
   }
-  // D1 ma limit 2 MB na rekord. Kompresujemy lokalnie i zachowujemy zdjęcia w projekcie JSON.
-  const ONLINE_BOOK_LIMIT=1_500_000;
+  // GitHub przechowuje publiczne pliki JSON (limit 850 KB); zdjęcia kompresujemy lokalnie.
+  const ONLINE_BOOK_LIMIT=850_000;
   const estimateOnlineSize=book=>new TextEncoder().encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book})).length;
   async function resizeImage(file,maxSide,quality){
     if(!["image/png","image/jpeg","image/webp"].includes(file.type))throw Error("Dozwolone są tylko obrazy JPG, PNG i WebP.");
@@ -411,7 +411,8 @@
       const data=await response.json();
       if(!response.ok||!data.storage)throw Error("Brak połączenia z bazą danych.");
       if(!data.adminConfigured)throw Error("Administrator nie skonfigurował jeszcze sekretu ADMIN_SECRET w Cloudflare.");
-      info.textContent="Serwer online jest gotowy. Możesz opublikować księgę z własnym hasłem.";
+      if(!data.githubConfigured)throw Error("Administrator nie skonfigurował jeszcze sekretu GITHUB_TOKEN w Cloudflare.");
+      info.textContent="Serwer GitHub + prywatna D1 jest gotowy. Możesz opublikować księgę z własnym hasłem.";
       $("publish-online").disabled=false;
     }catch(err){
       info.textContent="Serwer ksiąg nie odpowiada: "+err.message;
@@ -425,7 +426,7 @@
     if(password.length<12||password.length>128){notify("Hasło musi zawierać od 12 do 128 znaków.");return}
     if(password!==confirmed){notify("Podane hasła nie są takie same.");return}
     const bytes=estimateOnlineSize(bookForOnline());
-    if(bytes>ONLINE_BOOK_LIMIT){notify("Księga ma "+Math.ceil(bytes/1024)+" KB. Limit publikacji w darmowej bazie D1 to około 1465 KB. Usuń część zdjęć lub zmniejsz je.");return}
+    if(bytes>ONLINE_BOOK_LIMIT){notify("Księga ma "+Math.ceil(bytes/1024)+" KB. Limit publikacji w repozytorium GitHub to 850 KB. Usuń część zdjęć lub zmniejsz je.");return}
     if(lastPublishedId&&!confirm("Ta księga została już opublikowana. Utworzyć kolejną, osobną kopię?"))return;
     publishing=true;$("publish-online").disabled=true;
     const status=$("online-status");
@@ -442,7 +443,7 @@
       $("publish-result").hidden=false;
       $("publish-password").value="";
       $("publish-confirm").value="";
-      status.textContent="Księga jest dostępna w bibliotece. Zachowaj identyfikator i hasło — hasła nie da się odzyskać.";
+      status.textContent="Księga została zapisana publicznie na GitHubie; wdrożenie strony może potrwać chwilę. Zachowaj identyfikator i hasło — hasła nie da się odzyskać.";
       notify("Opublikowano księgę! Możesz nią zarządzać w osobnym panelu.");
     }catch(err){status.textContent=err.message;notify("Nie udało się opublikować: "+err.message)}
     finally{publishing=false;$("publish-online").disabled=false}
