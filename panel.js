@@ -233,11 +233,13 @@
    const subtitle=document.createElement("p");subtitle.textContent=item.subtitle+" · Rok "+item.year;
    const id=document.createElement("code");id.textContent=item.id;
    const status=document.createElement("div");status.className="admin-entry__status"+(item.published?"":" off");
-   status.textContent=item.published?"Widoczna w bibliotece":"Ukryta";
+   status.textContent=item.static?"Księga publiczna z GitHuba":item.published?"Widoczna w bibliotece":"Ukryta";
    details.append(title,subtitle,id,status);
    const actions=document.createElement("div");actions.className="admin-entry__actions";
    const toggle=document.createElement("button");toggle.className="button";toggle.type="button";
-   toggle.textContent=item.published?"Ukryj":"Opublikuj";
+   toggle.textContent=item.static?"Pozycja statyczna":item.published?"Ukryj":"Opublikuj";
+   toggle.disabled=!!item.static;
+   toggle.title=item.static?"Starsze księgi można usunąć, ale nie można ich ukryć bez ponownego dodania do katalogu.":"Zmień widoczność księgi";
    toggle.addEventListener("click",async()=>{
      try{
        await api("/api/admin/publish",{method:"POST",body:{adminPassword:adminPass,id:item.id,published:!item.published}});
