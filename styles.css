@@ -113,3 +113,9 @@
   .topbar__subtitle,.topbar .local-indicator{display:none}
   .topbar__library{flex:1 1 130px;max-width:none;margin:0;text-align:center;padding:8px 6px}
 }
+
+
+/* Identyfikator i odnośnik do edycji po publikacji */
+.published-identity{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:8px}
+.published-identity code{flex:1;min-width:145px;overflow-wrap:anywhere;word-break:break-word}
+.published-identity .button{white-space:nowrap;align-self:stretch;margin:0;min-width:92px}
