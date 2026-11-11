@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="spine.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="manuscript-themes.css">
   <script src="api-config.js"></script>
   <script src="app.js" defer></script>
 </head>
@@ -66,11 +67,16 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
 
         <section class="edit-panel" id="panel-design" data-panel="design" hidden>
           <div class="section-heading">✥ &nbsp; Pergamin i iluminacje</div>
-          <h2>Wybierz styl kartek</h2><p class="description">Pięć rodzajów pergaminu, każdy z własnymi kolorami, zdobieniami i charakterem.</p>
+          <h2>Wybierz styl kartek</h2><p class="description">Czternaście rodzajów pergaminu inspirowanych średniowiecznymi rękopisami. Każdy ma własny kolor, fakturę i zdobienia — wybór od razu widać na rozłożonej księdze.</p>
           <div class="paper-options" id="paper-options" role="group" aria-label="Styl kartek"></div>
           <div class="rule"></div>
+          <div class="section-heading">✥ &nbsp; Obramowania i ornamenty</div>
+          <h2>Wybierz zdobienie kart</h2>
+          <p class="description">Osobno od koloru pergaminu wybierz ramkę: filigrany, heraldykę, gotyckie ornamenty lub sploty roślinne. Możesz dowolnie łączyć je ze wszystkimi rodzajami kartek.</p>
+          <div class="frame-options" id="frame-options" role="group" aria-label="Zdobienie ramek kart"></div>
+          <div class="rule"></div>
           <div class="section-heading">✥ &nbsp; Skórzana oprawa</div>
-          <h2>Kolor okładki</h2><div class="cover-options" id="cover-options" role="group" aria-label="Kolor okładki"></div>
+          <h2>Kolor okładki</h2><p class="description">Dwanaście skórzanych i barwionych opraw: od zakonnej czerni po książęcy karmazyn i jasną kość słoniową.</p><div class="cover-options" id="cover-options" role="group" aria-label="Kolor okładki"></div>
           <div class="rule"></div>
           <div class="section-heading">✥ &nbsp; Introligatorstwo i grzbiety</div>
           <h2>Wybierz grzbiet księgi</h2>
@@ -190,7 +196,7 @@ Los postawił przed nim nowe wyzwanie…"></textarea>
         <span id="page-indicator" class="page-indicator">Okładka</span>
         <button type="button" class="page-button" id="next-page">Dalej →</button>
       </div>
-      <div class="preview-footer"><span>✥ Podgląd aktualizuje się podczas tworzenia kroniki.</span><span>5 rodzajów pergaminu · 4 oprawy</span></div>
+      <div class="preview-footer"><span>✥ Podgląd aktualizuje się podczas tworzenia kroniki.</span><span>14 pergaminów · 7 ornamentów · 12 okładek · 10 grzbietów</span></div>
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
