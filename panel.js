@@ -53,11 +53,35 @@
    (book?.photos||[]).forEach((photo,index)=>{
      const card=document.createElement("div");card.className="image-card";
      const img=document.createElement("img");img.src=photo.data;img.alt="Ilustracja "+(index+1);
-     const input=document.createElement("input");input.type="text";input.maxLength=160;input.value=photo.caption||"";input.setAttribute("aria-label","Podpis ilustracji "+(index+1));
-     input.addEventListener("input",()=>{book.photos[index].caption=input.value});
+     const label=document.createElement("label");label.textContent="Podpis ilustracji";
+     const input=document.createElement("input");input.type="text";input.maxLength=160;input.value=photo.caption||"";
+     input.addEventListener("input",()=>{photo.caption=input.value});label.append(input);
+     const pageLabel=document.createElement("label");pageLabel.textContent="Karta nr";
+     const pageInput=document.createElement("input");pageInput.type="number";pageInput.min=1;pageInput.max=500;
+     pageInput.value=photo.page||"";pageInput.placeholder="Na końcu księgi";
+     pageInput.addEventListener("change",()=>{
+       if(!pageInput.value.trim()){photo.page=null;return}
+       const number=Number(pageInput.value);
+       if(!Number.isInteger(number)||number<1||number>500||book.photos.some((other,i)=>i!==index&&other.page===number)){
+         pageInput.value=photo.page||"";feedback("Wybierz wolną kartę od 1 do 500.",true);return;
+       }
+       photo.page=number;
+     });
+     pageLabel.append(pageInput);
+     const locLabel=document.createElement("label");locLabel.textContent="Położenie";
+     const loc=document.createElement("select");
+     [["top","Góra"],["middle","Środek"],["bottom","Dół"],["full","Osobna karta"]]
+       .forEach(([key,title])=>{const opt=document.createElement("option");opt.value=key;opt.textContent=title;loc.append(opt)});
+     loc.value=photo.position||"middle";
+     loc.addEventListener("change",()=>{photo.position=loc.value});locLabel.append(loc);
+     const sizeLabel=document.createElement("label");sizeLabel.textContent="Rozmiar";
+     const size=document.createElement("select");
+     [["small","Mały"],["medium","Średni"],["large","Duży"]]
+       .forEach(([key,title])=>{const opt=document.createElement("option");opt.value=key;opt.textContent=title;size.append(opt)});
+     size.value=photo.size||"medium";size.addEventListener("change",()=>{photo.size=size.value});sizeLabel.append(size);
      const btn=document.createElement("button");btn.className="button button--danger";btn.type="button";btn.textContent="Usuń ilustrację";
      btn.addEventListener("click",()=>{book.photos.splice(index,1);renderImages();feedback("Obraz usunięto z projektu. Zapisz zmiany, aby zatwierdzić nową wersję.")});
-     card.append(img,input,btn);list.append(card);
+     card.append(img,label,pageLabel,locLabel,sizeLabel,btn);list.append(card);
    });
  }
  function clearLogin(){
@@ -200,7 +224,8 @@
      if(book.photos.length>=photoCap){feedback("Osiągnięto limit 12 ilustracji.",true);break}
      try{
        const data=await shrink(file);
-       book.photos.push({id:crypto.randomUUID(),data,caption:file.name.replace(/\.[^.]+$/,"").slice(0,160)});
+       let page=2;while(page<=500&&book.photos.some(p=>p.page===page))page++;
+       book.photos.push({id:crypto.randomUUID(),data,caption:file.name.replace(/\.[^.]+$/,"").slice(0,160),page:page<=500?page:null,position:"middle",size:"medium"});
      }catch(err){feedback(err.message,true)}
    }
    renderImages();feedback("Obrazy zostały dodane. Zapisz zmiany, aby zaktualizować księgę.");
