@@ -37,9 +37,11 @@
      const health=await api("/api/health");
      message.classList.toggle("is-online",health.ok&&health.storage);
      message.classList.toggle("is-offline",!health.storage);
-     message.textContent=health.storage
-       ?"Połączenie z bezpiecznym serwerem ksiąg aktywne. "+(health.imageAI?"Generator ilustracji dostępny.":"Generator AI wymaga dodatkowego uruchomienia.")
-       :"Serwer odpowiada, ale baza D1 lub magazyn R2 nie zostały jeszcze skonfigurowane.";
+     message.textContent=!health.storage
+       ?"Serwer odpowiada, ale baza D1 lub magazyn R2 nie zostały jeszcze skonfigurowane."
+       :!health.adminConfigured
+        ?"Baza ksiąg jest dostępna, ale administrator musi jeszcze ustawić sekret ADMIN_SECRET."
+        :"Połączenie z bezpiecznym serwerem ksiąg aktywne. "+(health.imageAI?"Generator ilustracji dostępny.":"Generator AI wymaga dodatkowego uruchomienia.");
    }catch(err){
      message.classList.add("is-offline");
      message.textContent="Nie udało się połączyć z serwerem ksiąg: "+err.message;
