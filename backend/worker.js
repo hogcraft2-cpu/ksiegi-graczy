@@ -20,7 +20,7 @@ const PAPERS=["classic","royal","battle","monastery","nocturne","vellum","marble
 const COVERS=["burgundy","forest","midnight","chestnut","oxblood","ivory","obsidian","violet","teal","copper","ochre","slate"];
 const FRAMES=["plain","filigree","gothic","heraldic","vines","royal","scribal"];
 const DATA_IMAGE=/^data:image\/(png|jpeg|webp);base64,[a-z\d+/=]+$/i;
-const PRESET_IMAGE=/^assets\/scenes\/scene-(?:0[1-9]|10)\.webp$/;
+const PRESET_IMAGE=/^assets\/scenes\/scene-(?:0[1-9]|[1-4][0-9]|50)\.webp$/;
 const PHOTO_POSITIONS=["top","middle","bottom","full"];
 const PHOTO_SIZES=["small","medium","large"];
 const ID_RE=/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/;
