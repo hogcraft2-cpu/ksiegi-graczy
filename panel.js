@@ -97,7 +97,7 @@
    try{
      const response=await api("/api/books");
      const books=(Array.isArray(response.books)?response.books:[])
-       .filter(item=>typeof item.id==="string"&&/^[a-f\\d-]{36}$/i.test(item.id))
+       .filter(item=>typeof item.id==="string"&&/^[a-f0-9-]{36}$/i.test(item.id))
        .filter(item=>(String(item.title||"")+" "+String(item.subtitle||"")).toLocaleLowerCase("pl").includes(query))
        .slice(0,35);
      target.replaceChildren();
@@ -324,7 +324,7 @@
    $("search-books").addEventListener("click",searchBooks);
    $("book-search").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();searchBooks()}});
    const requested=new URLSearchParams(location.search).get("book");
-   if(requested&&/^[a-f\\d-]{36}$/i.test(requested)){
+   if(requested&&/^[a-f0-9-]{36}$/i.test(requested)){
      $("owner-id").value=requested;
      const hint=document.createElement("p");
      hint.textContent="Identyfikator został wypełniony automatycznie. Wpisz hasło właściciela.";
