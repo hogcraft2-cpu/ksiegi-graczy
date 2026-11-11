@@ -191,7 +191,7 @@
       pack=[];count=0;
     }
     for(const paragraph of paras){
-      const header=paragraph.match(/^(?:Rozdzia[łl]\b|Prolog\b|Epilog\b|#\s+)/i) && paragraph.length<160;
+      const header=paragraph.match(/^(?:Rozdzia[łl](?:\s|$)|Prolog\b|Epilog\b|#\s+)/i) && paragraph.length<160;
       if(header){flush();title=paragraph.replace(/^#\s*/,"");continue}
       for(const slice of chunkParagraph(paragraph,cap-22)){
         if(pack.length && count+slice.length+20>cap)flush();
