@@ -8,9 +8,10 @@
   const SAFE_BOOK=/^books\/[a-z0-9][a-z0-9-]*\.json$/;
   const SAFE_ASSET=/^(?:\.\/)?assets\/[a-z0-9\/_-]+\.(?:svg|png|jpe?g|webp)$/i;
   const SAFE_IMAGE=/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
-  const COVERS=["burgundy","forest","midnight","chestnut"];
-  const PAPERS=["classic","royal","battle","monastery","nocturne"];
-  const SPINES=["illuminated","ironbound","monastic","merchant"];
+  const COVERS=["burgundy","forest","midnight","chestnut","oxblood","ivory","obsidian","violet","teal","copper","ochre","slate"];
+  const PAPERS=["classic","royal","battle","monastery","nocturne","vellum","marbled","scholar","herbarium","ash","azure","crimson","cathedral","winter"];
+  const SPINES=["illuminated","ironbound","monastic","merchant","royal","crusader","archivist","alchemist","rustic","celestial"];
+  const FRAMES=["plain","filigree","gothic","heraldic","vines","royal","scribal"];
   const escapeHTML=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const safeImage=value=>typeof value==="string"&&value.length<8_000_000&&(SAFE_IMAGE.test(value)||SAFE_ASSET.test(value))?value:null;
   const cleaned=(value,max=300)=>typeof value==="string"?value.slice(0,max):"";
@@ -35,7 +36,8 @@
       year:cleaned(item.year,30),
       cover:COVERS.includes(item.cover)?item.cover:"burgundy",
       paper:PAPERS.includes(item.paper)?item.paper:"classic",
-      spine:SPINES.includes(item.spine)?item.spine:"illuminated"
+      spine:SPINES.includes(item.spine)?item.spine:"illuminated",
+      frame:FRAMES.includes(item.frame)?item.frame:"plain"
     }));
   }
   async function loadCatalog(){
@@ -58,7 +60,8 @@
           subtitle:cleaned(book.subtitle,110)||"Dzieje bohatera",
           year:cleaned(book.year,30),cover:COVERS.includes(book.cover)?book.cover:"burgundy",
           paper:PAPERS.includes(book.paper)?book.paper:"classic",
-          spine:SPINES.includes(book.spine)?book.spine:"illuminated"
+          spine:SPINES.includes(book.spine)?book.spine:"illuminated",
+          frame:FRAMES.includes(book.frame)?book.frame:"plain"
         }));
       }catch(error){errors.push("Serwer ksiąg: "+error.message)}
     }
@@ -185,6 +188,7 @@
       paper:PAPERS.includes(raw.paper)?raw.paper:item.paper,
       cover:COVERS.includes(raw.cover)?raw.cover:item.cover,
       spine:SPINES.includes(raw.spine)?raw.spine:item.spine,
+      frame:FRAMES.includes(raw.frame)?raw.frame:item.frame,
       photos:Array.isArray(raw.photos)?raw.photos.slice(0,12).map(p=>({
         data:safeImage(p?.data),
         caption:cleaned(p?.caption,160)
@@ -289,6 +293,7 @@
   }
   function drawPage(el,page,pageNo,book){
     el.dataset.paper=book.paper;
+    el.dataset.frame=book.frame;
     const top='<div class="page-kicker">❧ &nbsp; LIBER CHRONICARUM &nbsp; ❧</div>';
     let body="";
     if(page.kind==="title"){
