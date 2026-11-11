@@ -1,4 +1,6 @@
--- Skryptorium: katalog, bezpieczne hasze haseł i limity dostępu
+-- Tylko prywatne dane uwierzytelniania i metadane administracyjne.
+-- Publiczne historie, herby i obrazy są w repozytorium GitHub: books/*.json.
+-- Nie zapisujemy haseł jawnych, nawet w prywatnej bazie.
 CREATE TABLE IF NOT EXISTS books (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -12,13 +14,13 @@ CREATE TABLE IF NOT EXISTS books (
   published INTEGER NOT NULL DEFAULT 1,
   salt TEXT NOT NULL,
   hash TEXT NOT NULL,
-  -- Kompletne dane księgi i obrazy w data URL; maksymalnie 1,5 MB.
-  content_json TEXT NOT NULL,
+  -- Pole zgodności ze starszą wersją bazy. Nowe rekordy zapisują pusty ciąg.
+  content_json TEXT NOT NULL DEFAULT '',
   ai_uses INTEGER NOT NULL DEFAULT 0,
   ai_day TEXT NOT NULL DEFAULT ''
 );
-CREATE INDEX IF NOT EXISTS books_published_created ON books(published, created_at DESC);
-CREATE TABLE IF NOT EXISTS quotas (
+CREATE INDEX IF NOT EXISTS books_published_created ON books(published,created_at DESC);
+CREATE TABLE IF NOT EXISTS quotas(
   key TEXT PRIMARY KEY,
   hits INTEGER NOT NULL DEFAULT 0,
   expires INTEGER NOT NULL
