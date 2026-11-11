@@ -228,6 +228,128 @@
         "stajnia"
       ],
       "src": "assets/scenes/scene-20.webp"
+    },
+    {
+      "id": "scene-21",
+      "title": "Dama na białym koniu",
+      "category": "Dwór i szlachta",
+      "tags": [
+        "szlachcianka",
+        "dama",
+        "koń",
+        "podróż",
+        "zamek"
+      ],
+      "src": "assets/scenes/scene-21.webp"
+    },
+    {
+      "id": "scene-22",
+      "title": "Młody iluminator",
+      "category": "Rzemiosło",
+      "tags": [
+        "malarz",
+        "skryba",
+        "pisarz",
+        "księga",
+        "iluminacja"
+      ],
+      "src": "assets/scenes/scene-22.webp"
+    },
+    {
+      "id": "scene-23",
+      "title": "Budowa zamkowych murów",
+      "category": "Zamki i miejsca",
+      "tags": [
+        "zamek",
+        "murarz",
+        "budowa",
+        "rusztowanie"
+      ],
+      "src": "assets/scenes/scene-23.webp"
+    },
+    {
+      "id": "scene-24",
+      "title": "Kupiec handlujący przyprawami",
+      "category": "Życie codzienne",
+      "tags": [
+        "kupiec",
+        "targ",
+        "handel",
+        "przyprawy"
+      ],
+      "src": "assets/scenes/scene-24.webp"
+    },
+    {
+      "id": "scene-25",
+      "title": "Sokolnik na zamku",
+      "category": "Dwór i szlachta",
+      "tags": [
+        "sokół",
+        "sokolnik",
+        "zamek",
+        "polowanie"
+      ],
+      "src": "assets/scenes/scene-25.webp"
+    },
+    {
+      "id": "scene-26",
+      "title": "Rycerz pod błękitnym sztandarem",
+      "category": "Rycerstwo",
+      "tags": [
+        "rycerz",
+        "koń",
+        "chorągiew",
+        "zamek"
+      ],
+      "src": "assets/scenes/scene-26.webp"
+    },
+    {
+      "id": "scene-27",
+      "title": "Wędrowiec przed zamkiem",
+      "category": "Podróże",
+      "tags": [
+        "wędrowiec",
+        "droga",
+        "podróż",
+        "zamek"
+      ],
+      "src": "assets/scenes/scene-27.webp"
+    },
+    {
+      "id": "scene-28",
+      "title": "Ćwiczenie strzelania z łuku",
+      "category": "Rycerstwo",
+      "tags": [
+        "łucznik",
+        "łuk",
+        "strzały",
+        "trening"
+      ],
+      "src": "assets/scenes/scene-28.webp"
+    },
+    {
+      "id": "scene-29",
+      "title": "Uczta w średniowiecznej gospodzie",
+      "category": "Życie codzienne",
+      "tags": [
+        "gospoda",
+        "karczma",
+        "uczta",
+        "muzyka"
+      ],
+      "src": "assets/scenes/scene-29.webp"
+    },
+    {
+      "id": "scene-30",
+      "title": "Płatnerze dopasowują zbroję",
+      "category": "Rzemiosło",
+      "tags": [
+        "płatnerz",
+        "zbroja",
+        "warsztat",
+        "rycerz"
+      ],
+      "src": "assets/scenes/scene-30.webp"
     }
   ]
 }
