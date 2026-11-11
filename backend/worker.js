@@ -1,14 +1,16 @@
-/* Skryptorium API • Cloudflare Workers + D1 (+ opcjonalne Workers AI).
- * Bez R2: pełna księga, herb i ilustracje przechowywane w D1 w jednym rekordzie.
- * Hasła pozostają wyłącznie w bezpiecznym zapleczu.
+/* Skryptorium API • publiczne księgi na GitHubie, poufne hasze w D1.
+ * Worker trzyma prywatny GITHUB_TOKEN, ADMIN_SECRET i RATE_SALT jako Secrets.
+ * GitHub Pages czyta publiczną bibliotekę; nikt nie publikuje przez token z przeglądarki.
  */
 const encoder=new TextEncoder();
 const decodeHex=x=>Uint8Array.from(x.match(/.{1,2}/g)||[],c=>parseInt(c,16));
 const toHex=bytes=>Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,"0")).join("");
 const PASSWORD_ITERATIONS=160000;
 const PUBLIC_LIMIT=1_850_000;
-const BOOK_LIMIT=1_500_000; // D1 limit 2 MB na rekord; zachowujemy bezpieczny zapas
-const IMAGE_LIMIT=400_000;
+const BOOK_LIMIT=850_000; // GitHub Contents API: plik JSON zachowujemy poniżej 1 MB
+const IMAGE_LIMIT=250_000;
+const GITHUB_REPO="hogcraft2-cpu/ksiegi-graczy";
+const GITHUB_CATALOG="books/catalog.json";
 const SPINES=["illuminated","ironbound","monastic","merchant"];
 const PAPERS=["classic","royal","battle","monastery","nocturne"];
 const COVERS=["burgundy","forest","midnight","chestnut"];
@@ -36,7 +38,7 @@ class ApiError extends Error{
  constructor(status,message){super(message);this.status=status}
 }
 async function bodyJSON(request){
- if(Number(request.headers.get("Content-Length")||0)>PUBLIC_LIMIT)throw new ApiError(413,"Za duża przesyłka. Zmniejsz zdjęcia i herb (maks. 1,5 MB na księgę).");
+ if(Number(request.headers.get("Content-Length")||0)>PUBLIC_LIMIT)throw new ApiError(413,"Za duża przesyłka. Zmniejsz zdjęcia i herb (limit księgi: 850 KB).");
  if(!/application\/json/i.test(request.headers.get("Content-Type")||""))throw new ApiError(415,"Oczekiwano danych JSON.");
  const text=await request.text();
  if(encoder.encode(text).length>PUBLIC_LIMIT)throw new ApiError(413,"Przesyłka przekracza dozwolony rozmiar.");
@@ -91,7 +93,7 @@ function validateBook(raw){
    if(!photo||typeof photo!=="object"||typeof photo.data!=="string"||photo.data.length>IMAGE_LIMIT||!DATA_IMAGE.test(photo.data))throw new ApiError(422,"Jeden z obrazów jest zbyt duży lub ma niepoprawny format.");
    book.photos.push({id:clean(photo.id,50)||crypto.randomUUID(),data:photo.data,caption:clean(photo.caption,160)});
  }
- if(encoder.encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book})).length>BOOK_LIMIT)throw new ApiError(413,"Księga przekracza limit 1,5 MB w D1. Usuń część ilustracji lub zmniejsz ich rozmiar.");
+ if(encoder.encode(JSON.stringify({format:"ksiegi-graczy/book",version:1,book})).length>BOOK_LIMIT)throw new ApiError(413,"Księga przekracza limit 850 KB dla pliku na GitHubie. Usuń część ilustracji lub zmniejsz ich rozmiar.");
  return book;
 }
 function publicRow(row){
@@ -100,11 +102,82 @@ function publicRow(row){
 async function getRow(env,id){
  return await env.DB.prepare("SELECT id,salt,hash,published,ai_day,ai_uses FROM books WHERE id=?").bind(id).first();
 }
-async function objectBook(env,id){
- const record=await env.DB.prepare("SELECT content_json FROM books WHERE id=?").bind(id).first();
- if(!record?.content_json)throw new ApiError(404,"Nie znaleziono księgi.");
- try{return JSON.parse(record.content_json)}catch(_){throw new ApiError(500,"Dane księgi są uszkodzone.")}
+function githubHeaders(env){
+ if(!env.GITHUB_TOKEN||env.GITHUB_TOKEN.length<25)throw new ApiError(503,"GitHub nie jest połączony z API: ustaw tajny GITHUB_TOKEN.");
+ return {
+  Authorization:"Bearer "+env.GITHUB_TOKEN,
+  Accept:"application/vnd.github+json",
+  "X-GitHub-Api-Version":"2022-11-28",
+  "User-Agent":"Skryptorium-Ksiegi-Worker",
+  "Content-Type":"application/json"
+ };
 }
+function githubURL(path){
+ if(!/^books\/[a-zA-Z0-9._/-]+\.json$/.test(path)||path.includes(".."))throw new ApiError(400,"Niepoprawna ścieżka na GitHubie.");
+ return "https://api.github.com/repos/"+GITHUB_REPO+"/contents/"+path;
+}
+function base64Encode(text){
+ const bytes=encoder.encode(text);
+ let binary="";
+ for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+ return btoa(binary);
+}
+function base64Decode(value){
+ const binary=atob(value.replace(/\s/g,""));
+ const bytes=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+ return new TextDecoder().decode(bytes);
+}
+async function githubFetch(env,path,allowMissing=false){
+ const response=await fetch(githubURL(path),{headers:githubHeaders(env),cache:"no-store"});
+ if(response.status===404&&allowMissing)return null;
+ if(!response.ok)throw new ApiError(502,"GitHub nie zwrócił pliku "+path+" (HTTP "+response.status+").");
+ const data=await response.json();
+ if(data.type!=="file"||typeof data.content!=="string"||!data.sha)throw new ApiError(502,"GitHub nie zwrócił treści pliku.");
+ try{return {sha:data.sha,data:JSON.parse(base64Decode(data.content))}}
+ catch(_){throw new ApiError(502,"GitHub zwrócił uszkodzony plik JSON.")}
+}
+async function githubWrite(env,path,json,sha){
+ const payload={message:"Skryptorium: zapisz księgę lub katalog",content:base64Encode(JSON.stringify(json,null,2)+"\n"),branch:"main"};
+ if(sha)payload.sha=sha;
+ const response=await fetch(githubURL(path),{method:"PUT",headers:githubHeaders(env),body:JSON.stringify(payload)});
+ if(response.status===409||response.status===422)throw new ApiError(409,"Konflikt zapisu na GitHubie — spróbuj ponownie.");
+ if(!response.ok)throw new ApiError(502,"Nie udało się zapisać pliku na GitHubie (HTTP "+response.status+").");
+ return response.json();
+}
+async function githubDelete(env,path){
+ const existing=await githubFetch(env,path,true);
+ if(!existing)return;
+ const payload={message:"Skryptorium: usuń księgę",sha:existing.sha,branch:"main"};
+ const response=await fetch(githubURL(path),{method:"DELETE",headers:githubHeaders(env),body:JSON.stringify(payload)});
+ if(response.status===409)throw new ApiError(409,"Plik księgi zmienił się w trakcie usuwania. Ponów operację.");
+ if(!response.ok)throw new ApiError(502,"GitHub nie usunął pliku (HTTP "+response.status+").");
+}
+function bookPath(id){return "books/"+id+".json"}
+async function objectBook(env,id){
+ const file=await githubFetch(env,bookPath(id),true);
+ if(!file)throw new ApiError(404,"Nie znaleziono pliku księgi na GitHubie.");
+ if(file.data?.format!=="ksiegi-graczy/book"||file.data.version!==1)throw new ApiError(502,"Nieobsługiwany format księgi.");
+ return file.data;
+}
+function publicFromBook(id,book){
+ return {id,file:bookPath(id),title:book.character,subtitle:book.subtitle,year:book.year,
+  cover:book.cover,paper:book.paper,spine:book.spine};
+}
+async function updateCatalog(env,id,entry){
+ // Optimistic concurrency: GitHub requires the current SHA of catalog.json.
+ for(let attempt=0;attempt<5;attempt++){
+  const current=await githubFetch(env,GITHUB_CATALOG);
+  const catalog=current.data;
+  if(!Array.isArray(catalog.books))throw new ApiError(502,"Katalog GitHuba ma nieprawidłowy format.");
+  const items=catalog.books.filter(b=>b.id!==id);
+  if(entry)items.unshift(entry);
+  catalog.books=items;
+  try{await githubWrite(env,GITHUB_CATALOG,catalog,current.sha);return}
+  catch(err){if(err.status!==409||attempt===4)throw err}
+ }
+}
+
 async function checkOwner(request,env,id,password){
  const row=await getRow(env,id);
  if(!row)throw new ApiError(404,"Księga nie istnieje.");
@@ -135,15 +208,18 @@ async function checkAdmin(request,env,password){
  await env.DB.prepare("DELETE FROM quotas WHERE key=?").bind(key).run();
 }
 async function deleteBook(env,id){
+ await updateCatalog(env,id,null);
+ await githubDelete(env,bookPath(id));
  await env.DB.prepare("DELETE FROM books WHERE id=?").bind(id).run();
 }
 async function handle(request,env){
  const url=new URL(request.url);
  const path=url.pathname.replace(/\/$/,"")||"/";
  if(path==="/api/health"&&request.method==="GET"){
-   return result(request,env,{ok:true,storage:!!env.DB,imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16)});
+   return result(request,env,{ok:true,storage:!!env.DB,githubConfigured:!!(env.GITHUB_TOKEN&&env.GITHUB_TOKEN.length>=25),imageAI:!!env.AI,adminConfigured:!!(env.ADMIN_SECRET&&env.ADMIN_SECRET.length>=16)});
  }
  if(!env.DB)throw new ApiError(503,"Serwer nie ma podłączonej bazy D1.");
+ if(!env.GITHUB_TOKEN||env.GITHUB_TOKEN.length<25)throw new ApiError(503,"Serwer nie ma ustawionego tajnego tokenu GitHub.");
  if(path==="/api/books"&&request.method==="GET"){
    const rows=await env.DB.prepare("SELECT id,title,subtitle,year,cover,paper,spine,updated_at FROM books WHERE published=1 ORDER BY created_at DESC LIMIT 250").all();
    return result(request,env,{version:1,books:(rows.results||[]).map(publicRow)});
