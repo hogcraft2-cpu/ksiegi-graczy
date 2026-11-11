@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#19120d">
+  <meta name="description" content="Skryptorium — kreator średniowiecznych ksiąg postaci. Wpisz historię, wybierz pergamin i oprawę, dodaj herb i ilustracje.">
+  <title>Skryptorium — Kreator Ksiąg Postaci</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="vignette" aria-hidden="true"></div>
+  <header class="topbar">
+    <div class="mark" aria-hidden="true">✥</div>
+    <div class="brand"><small>PRACOWNIA ILUMINOWANYCH KSIĄG</small><strong>Skryptorium</strong></div>
+    <div class="topbar__rule" aria-hidden="true"></div>
+    <span class="topbar__subtitle">Kreator kronik postaci</span>
+    <span class="local-indicator">✦ &nbsp; Twoja opowieść pozostaje w przeglądarce</span>
+  </header>
+  <div class="layout">
+    <aside class="editor" aria-label="Panel tworzenia księgi">
+      <div class="editor-intro">
+        <span class="eyebrow">RĘKOPIS / EDYCJA</span>
+        <h1>Spisz własną <em>legendę</em></h1>
+        <p>Stwórz kronikę swojej postaci. Dobierz pergamin, oprawę i herb, a następnie zobacz, jak historia zmienia się w średniowieczną księgę.</p>
+      </div>
+      <nav class="tabs" aria-label="Etapy tworzenia księgi">
+        <button type="button" class="tab is-current" data-tab="story" aria-current="step"><span>01</span> Historia</button>
+        <button type="button" class="tab" data-tab="design"><span>02</span> Wygląd</button>
+        <button type="button" class="tab" data-tab="images"><span>03</span> Obrazy</button>
+        <button type="button" class="tab" data-tab="save"><span>04</span> Zapis</button>
+      </nav>
+      <div class="editor-scroll">
+        <section class="edit-panel" id="panel-story" data-panel="story">
+          <div class="section-heading">✥ &nbsp; Dzieje bohatera</div>
+          <label for="character">Imię i nazwisko postaci</label>
+          <input type="text" id="character" maxlength="85" placeholder="Np. Vojtiech Havel" autocomplete="off">
+          <label for="subtitle">Podtytuł księgi</label>
+          <input type="text" id="subtitle" maxlength="110" placeholder="Kronika wojaka z ziem Kuttenbergu">
+          <div class="pair">
+            <div><label for="year">Rok na okładce</label><input type="text" id="year" maxlength="30" placeholder="1403"></div>
+            <div><label for="author">Spisana przez</label><input type="text" id="author" maxlength="65" placeholder="Imię kronikarza"></div>
+          </div>
+          <label for="summary">Opis na pierwszej karcie</label>
+          <textarea id="summary" rows="3" maxlength="700" placeholder="O początkach, nadziejach i czynach bohatera…"></textarea>
+          <div class="rule"></div>
+          <div class="section-heading">✥ &nbsp; Historia postaci</div>
+          <label for="story">Tekst kroniki</label>
+          <textarea id="story" class="story-input" rows="16" maxlength="100000" spellcheck="true" placeholder="Rozdział I. Początki
+
+W pewnej niewielkiej osadzie, u progu XV stulecia, żył…
+
+Rozdział II. Pierwsza wyprawa
+
+Los postawił przed nim nowe wyzwanie…"></textarea>
+          <p class="hint">Możesz wkleić długą historię. Osobne akapity oddzielaj pustą linią. Nagłówki zaczynające się od „Rozdział”, „Prolog”, „Epilog” albo „# ” są rozpoznawane automatycznie. Tekst jest dzielony na strony.</p>
+        </section>
+
+        <section class="edit-panel" id="panel-design" data-panel="design" hidden>
+          <div class="section-heading">✥ &nbsp; Pergamin i iluminacje</div>
+          <h2>Wybierz styl kartek</h2><p class="description">Pięć rodzajów pergaminu, każdy z własnymi kolorami, zdobieniami i charakterem.</p>
+          <div class="paper-options" id="paper-options" role="group" aria-label="Styl kartek"></div>
+          <div class="rule"></div>
+          <div class="section-heading">✥ &nbsp; Skórzana oprawa</div>
+          <h2>Kolor okładki</h2><div class="cover-options" id="cover-options" role="group" aria-label="Kolor okładki"></div>
+          <div class="rule"></div>
+          <div class="section-heading">✥ &nbsp; Heraldyka</div>
+          <h2>Herb postaci lub rodu</h2>
+          <div class="crest-setting">
+            <div class="crest-mini" id="crest-mini" aria-label="Podgląd herbu">⚜</div>
+            <div class="crest-actions">
+              <label class="file-button" for="crest-upload">Dodaj własny herb</label>
+              <input id="crest-upload" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+              <button class="text-button" id="remove-crest" type="button">Usuń herb</button>
+              <small>Najlepiej sprawdza się PNG lub WebP z przezroczystym tłem.</small>
+            </div>
+          </div>
+          <p class="hint">Herb pojawi się na przedniej okładce i na karcie tytułowej księgi.</p>
+        </section>
+
+        <section class="edit-panel" id="panel-images" data-panel="images" hidden>
+          <div class="section-heading">✥ &nbsp; Rycinami ozdobiona opowieść</div>
+          <h2>Ilustracje i fotografie</h2><p class="description">Dodaj portret postaci, sceny z jej życia, rodzinne posiadłości lub inne obrazy. Trafią na osobne karty z podpisami.</p>
+          <label for="photos-upload" class="upload-zone">
+            <span class="upload-zone__icon">❦</span>
+            <strong>Wybierz obrazy</strong>
+            <span>JPG / PNG / WebP · maksymalnie 12 fotografii</span>
+          </label>
+          <input id="photos-upload" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+          <div class="photo-list" id="photo-list" aria-live="polite"></div>
+          <p class="hint">Obrazy są zmniejszane w przeglądarce. Nie wysyłamy ich na serwer — pozostają w Twoim projekcie.</p>
+        </section>
+
+        <section class="edit-panel" id="panel-save" data-panel="save" hidden>
+          <div class="section-heading">✥ &nbsp; Zachowaj swój rękopis</div>
+          <h2>Zapis księgi</h2><p class="description">Na tym etapie zapisujemy projekt księgi. W przyszłości zbudujemy osobną bibliotekę z półkami i grzbietami ksiąg.</p>
+          <div class="export-card">
+            <div class="export-card__icon">✒</div>
+            <div>
+              <h3>Plik księgi (JSON)</h3>
+              <p>Zapisuje historię, styl kartek, oprawę, herb i ilustracje. Ten format wykorzystamy później przy dodawaniu ksiąg do biblioteki.</p>
+              <button type="button" id="save-json" class="button button--gold">Pobierz księgę .json</button>
+            </div>
+          </div>
+          <div class="export-card">
+            <div class="export-card__icon">❧</div>
+            <div>
+              <h3>Wczytaj wcześniejszy projekt</h3>
+              <p>Wróć do edycji księgi zapisanej wcześniej na dysku.</p>
+              <label for="load-json" class="button">Wczytaj projekt .json</label>
+              <input type="file" id="load-json" accept=".json,application/json" hidden>
+            </div>
+          </div>
+          <div class="future-note"><strong>Biblioteka online — następny etap</strong><p>Księgi będą ustawione na półkach grzbietem do czytelnika. Kliknięcie wybranej księgi otworzy jej pełny podgląd. Teraz nie ma jeszcze publicznego przesyłania ani katalogu książek.</p></div>
+          <button id="clear-project" class="text-button danger" type="button">Wyczyść i rozpocznij nowy rękopis</button>
+        </section>
+      </div>
+      <div class="editor-footer"><span id="save-status" role="status">Projekt zapisuje się w przeglądarce</span><span id="photo-count">0 ilustracji</span></div>
+    </aside>
+
+    <main class="preview" aria-label="Podgląd tworzonej księgi">
+      <div class="preview-head">
+        <div><span class="eyebrow">PODGLĄD NA ŻYWO</span><h2>Twoja księga</h2></div>
+        <div class="preview-head__actions">
+          <span class="theme-tag" id="theme-label">Pergamin klasyczny</span>
+          <button type="button" id="reset-preview" class="quiet-button">↶ Zamknij księgę</button>
+        </div>
+      </div>
+      <div class="desk">
+        <div class="candle-glow" aria-hidden="true"></div>
+        <div class="desk-seal" aria-hidden="true">✥ &nbsp; SCRIPTORIUM &nbsp; ✥</div>
+        <div class="book-shell">
+          <button type="button" class="book-cover cover-burgundy" id="book-cover" aria-label="Otwórz księgę">
+            <span class="cover-corners" aria-hidden="true"></span>
+            <span class="cover-kicker">LIBER CHRONICARUM</span>
+            <span class="cover-frame">
+              <span class="cover-crest" id="cover-crest">⚜</span>
+              <span class="cover-ornament">❧ &nbsp; ✣ &nbsp; ❧</span>
+              <span class="cover-title" id="cover-title">Kronika postaci</span>
+              <span class="cover-subtitle" id="cover-subtitle">Opowieść o losach bohatera</span>
+            </span>
+            <span class="cover-year" id="cover-year">ANNO DOMINI · 1403</span>
+            <span class="book-edge" aria-hidden="true"></span>
+          </button>
+          <div id="book-spread" class="book-spread" hidden>
+            <div class="folio" id="left-folio" data-paper="classic"></div>
+            <span class="spine" aria-hidden="true"></span>
+            <div class="folio" id="right-folio" data-paper="classic"></div>
+            <div id="turn-leaf" class="turn-leaf" aria-hidden="true"></div>
+          </div>
+        </div>
+        <p class="desk-hint" id="desk-hint">✦ &nbsp; Kliknij okładkę, aby rozpocząć czytanie &nbsp; ✦</p>
+      </div>
+      <div class="reader-controls">
+        <button type="button" class="page-button" id="prev-page" disabled>← Poprzednie</button>
+        <span id="page-indicator" class="page-indicator">Okładka</span>
+        <button type="button" class="page-button" id="next-page">Dalej →</button>
+      </div>
+      <div class="preview-footer"><span>✥ Podgląd aktualizuje się podczas tworzenia kroniki.</span><span>5 rodzajów pergaminu · 4 oprawy</span></div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
