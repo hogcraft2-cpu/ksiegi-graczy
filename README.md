@@ -35,6 +35,20 @@ Publiczna średniowieczna biblioteka postaci oraz kreator ksiąg w stylu Kingdom
 - [Publiczna biblioteka](https://hogcraft2-cpu.github.io/ksiegi-graczy/biblioteka.html)
 - [Zarządzanie księgą i panel administratora](https://hogcraft2-cpu.github.io/ksiegi-graczy/zarzadzanie.html)
 
+## Jak znaleźć ID księgi?
+
+1. Po opublikowaniu w kreatorze wybierz **Kopiuj ID**. Możesz też kliknąć **Otwórz tę księgę w panelu edycji**, aby identyfikator został uzupełniony automatycznie.
+2. Gdy zgubisz ID, otwórz **zarzadzanie.html → Moja księga → Znajdź identyfikator księgi po tytule**. Wpisz imię postaci, kliknij **Szukaj księgi** i wybierz wynik. Aby edytować, musisz nadal znać hasło.
+3. Alternatywnie znajdziesz wpis w publicznym pliku **books/catalog.json**; nowo opublikowane księgi mają identyfikatory UUID widoczne w polu `id`.
+
+Stare, ręcznie dodane książki (np. `vojtiech-havel`) mają publiczne identyfikatory inne niż UUID i nie są kontami właścicielskimi — nie zalogujesz się do ich edycji hasłem, dopóki nie opublikujesz ich w nowym systemie.
+
+**Hasła właścicieli:** kreator nie wymusza minimalnej ani maksymalnej liczby znaków. Hasło nie może być puste; serwer zachowuje jedynie techniczny limit **4096 bajtów**, aby zapobiec nadużyciom. Dla bezpieczeństwa zalecamy długie, unikatowe hasło. Hasło administratora `ADMIN_SECRET` zachowuje osobny wymóg co najmniej 16 znaków.
+
+**Po zmianie kodu Workera** w repozytorium należy ponownie wdrożyć plik `backend/worker.js` w Cloudflare, jeśli aktualizujesz go ręcznie przez **Edit code**. Zmiana plików na GitHubie nie aktualizuje automatycznie ręcznie wdrożonego Workera.
+
+---
+
 ## Najważniejsze: publiczne historie, prywatne hasła
 
 **Publiczne dane znajdują się w tym repozytorium GitHub.**
@@ -59,7 +73,7 @@ Publiczna średniowieczna biblioteka postaci oraz kreator ksiąg w stylu Kingdom
 
 **Biblioteka:** półki z grzbietami i podtytułami, wyszukiwarka, animacja wyciągania książki, czytnik z przewracaniem stron. Pierwsza przykładowa księga Vojtiecha Havela jest w publicznych plikach repozytorium.
 
-**Panel właściciela:** publikacja książki z indywidualnym hasłem, zapamiętanie jej UUID, późniejsza edycja, zmiana hasła i usuwanie po weryfikacji.
+**Panel właściciela:** publikacja książki z indywidualnym hasłem, kopiowanie UUID po publikacji, wyszukiwanie UUID po tytule w `zarzadzanie.html`, późniejsza edycja, zmiana hasła i usuwanie po weryfikacji.
 
 **Panel administratora:** lista książek zarządzanych przez API, ukrywanie/przywracanie, usuwanie bez znajomości haseł właścicieli. Administrator widzi też wcześniejsze statyczne księgi z katalogu, np. Vojtiecha, i może je usuwać (bez funkcji ukrywania dla tych starych wpisów).
 
