@@ -93,3 +93,23 @@
   .spine-choice__caption strong{font-size:12px}
   .spine-choice__stage{height:203px}
 }
+
+
+/* Publikacja online chroniona indywidualnym hasłem */
+.publish-online{margin:25px 0 20px;padding:19px 16px;border:1px solid #8b7149;background:linear-gradient(115deg,#31251a,#261d16);box-shadow:inset 0 0 0 3px #292117}
+.publish-online h2{font:500 20px/1.3 'Cinzel',Georgia,serif;color:#f0d3a2}
+.publish-online label{margin-top:13px}
+.publish-online .button{margin:17px 0 6px}
+.publish-online input[type=password]{display:block;width:100%;background:#18140f;border:1px solid #8b6a45;padding:11px;color:#f4e3c8;font:15px Arial,sans-serif;outline-offset:2px}
+.publish-online input:focus{border-color:#f0c785}
+.publish-online .hint{margin:9px 0 0}
+.publish-result{padding:13px;margin-top:17px;background:#41301e;border:1px solid #ba9562;color:#f0ddbb}
+.publish-result strong{font-size:17px}
+.publish-result code{display:block;word-break:break-all;font:12px/1.5 ui-monospace,monospace;color:#f6d9a2;background:#231a13;padding:9px;margin:9px 0}
+.publish-result a{color:#f4cb8d}
+@media(max-width:660px){
+  .topbar{height:auto;min-height:66px;flex-wrap:wrap;padding:12px;gap:7px}
+  .topbar .brand{flex:1 1 100%}
+  .topbar__subtitle,.topbar .local-indicator{display:none}
+  .topbar__library{flex:1 1 130px;max-width:none;margin:0;text-align:center;padding:8px 6px}
+}
