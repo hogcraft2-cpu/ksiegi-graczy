@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "description": "Katalog publicznych ksiąg Skryptorium. Plik wskazuje wyłącznie opublikowane księgi.",
+  "books": [
+    {
+      "id": "vojtiech-havel",
+      "file": "books/vojtiech-havel.json",
+      "title": "Vojtiech Havel",
+      "subtitle": "Kronika wojaka · lata 1386–1403",
+      "year": "1403",
+      "paper": "royal",
+      "cover": "burgundy"
+    }
+  ]
+}
